@@ -95,7 +95,7 @@ function ActivityPage() {
         .from('daily_activities')
         .select(`
           *,
-          activity_items (*)
+          activity_items!activity_items_daily_activity_id_fkey (*)
         `)
         .eq('seller_id', profile?.id || '')
         .order('activity_date', { ascending: false })
