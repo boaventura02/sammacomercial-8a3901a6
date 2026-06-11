@@ -11,41 +11,59 @@ export const Route = createFileRoute('/login')({
 });
 
 function Login() {
+  const [isSignUp, setIsSignUp] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-
-      if (error) throw error;
-
-      // Fetch profile to determine role
-      const { data: profile, error: profileError } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('id', data.user.id)
-        .single();
-
-      if (profileError) throw profileError;
-
-      if (profile.role === 'admin') {
-        navigate({ to: '/admin/dashboard' });
+      if (isSignUp) {
+        const { error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            data: {
+              role: 'seller', // Default role
+            },
+          },
+        });
+        if (error) throw error;
+        toast({
+          title: 'Conta criada com sucesso!',
+          description: 'Verifique seu e-mail para confirmar o cadastro.',
+        });
+        setIsSignUp(false);
       } else {
-        navigate({ to: '/seller/dashboard' });
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email,
+          password,
+        });
+
+        if (error) throw error;
+
+        const { data: profile, error: profileError } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('id', data.user.id)
+          .single();
+
+        if (profileError) throw profileError;
+
+        if (profile.role === 'admin') {
+          navigate({ to: '/admin/dashboard' });
+        } else {
+          navigate({ to: '/seller/dashboard' });
+        }
       }
     } catch (error: any) {
       toast({
-        title: 'Erro ao entrar',
-        description: error.message || 'Verifique suas credenciais.',
+        title: isSignUp ? 'Erro ao cadastrar' : 'Erro ao entrar',
+        description: error.message || 'Ocorreu um erro inesperado.',
         variant: 'destructive',
       });
     } finally {
@@ -71,7 +89,7 @@ function Login() {
           </p>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleLogin} className="space-y-4 mt-6">
+          <form onSubmit={handleSubmit} className="space-y-4 mt-6">
             <div className="space-y-2">
               <Input
                 type="email"
@@ -97,8 +115,18 @@ function Login() {
               disabled={loading}
               className="w-full h-12 bg-primary text-primary-foreground hover:bg-primary/90 font-bold transition-all"
             >
-              {loading ? 'Entrando...' : 'ENTRAR'}
+              {loading ? (isSignUp ? 'Cadastrando...' : 'Entrando...') : (isSignUp ? 'CADASTRAR' : 'ENTRAR')}
             </Button>
+            
+            <div className="text-center mt-4">
+              <button
+                type="button"
+                onClick={() => setIsSignUp(!isSignUp)}
+                className="text-sm text-muted-foreground hover:text-primary transition-colors"
+              >
+                {isSignUp ? 'Já tem uma conta? Entre aqui' : 'Não tem uma conta? Cadastre-se'}
+              </button>
+            </div>
           </form>
         </CardContent>
       </Card>
