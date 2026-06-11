@@ -55,7 +55,7 @@ function LoginPage() {
       <Card className="relative w-full max-w-md p-8 z-10 border-white/10 bg-black/40 backdrop-blur-xl animate-fade-up border-[0.5px]">
         <div className="flex flex-col items-center mb-8">
           <Link to="/" className="text-3xl font-bold tracking-tighter text-white uppercase italic mb-2 hover:opacity-80 transition-opacity">
-            SAMMA<span className="text-[#2df42d]">.</span>
+            SAMMA<span className="text-primary">.</span>
           </Link>
           <p className="text-gray-400 text-xs uppercase tracking-[0.2em] font-medium">
             Gestão de Equipes de Vendas
@@ -70,7 +70,7 @@ function LoginPage() {
               value={email} 
               onChange={(e) => setEmail(e.target.value)} 
               required 
-              className="bg-white/5 border-white/10 text-white placeholder:text-gray-500 rounded-none h-12 uppercase text-[10px] tracking-widest focus:border-[#2df42d]/50 focus:ring-0"
+              className="bg-white/5 border-white/10 text-white placeholder:text-gray-500 rounded-none h-12 uppercase text-[10px] tracking-widest focus:border-primary/50 focus:ring-0"
             />
           </div>
           <div className="space-y-2">
@@ -80,7 +80,7 @@ function LoginPage() {
               value={password} 
               onChange={(e) => setPassword(e.target.value)} 
               required 
-              className="bg-white/5 border-white/10 text-white placeholder:text-gray-500 rounded-none h-12 uppercase text-[10px] tracking-widest focus:border-[#2df42d]/50 focus:ring-0"
+              className="bg-white/5 border-white/10 text-white placeholder:text-gray-500 rounded-none h-12 uppercase text-[10px] tracking-widest focus:border-primary/50 focus:ring-0"
             />
           </div>
           
@@ -92,7 +92,7 @@ function LoginPage() {
 
           <Button 
             type="submit" 
-            className="w-full bg-[#2df42d] text-black hover:bg-[#25cc25] rounded-none h-12 font-bold uppercase tracking-[0.2em] text-[11px] transition-all" 
+            className="w-full bg-primary text-primary-foreground hover:bg-primary/90 rounded-none h-12 font-bold uppercase tracking-[0.2em] text-[11px] transition-all" 
             disabled={loading}
           >
             {loading ? "PROCESSANDO..." : "ACESSAR SISTEMA"}
