@@ -1,58 +1,72 @@
-@import "tailwindcss" source(none);
-@source "../src";
-@import "tw-animate-css";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-@custom-variant dark (&:is(.dark *));
+@layer base {
+  :root {
+    --background: 220 20% 8%;
+    --foreground: 0 0% 96%;
 
-@theme inline {
-  --font-sora: "Sora", sans-serif;
-  
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --color-primary: var(--primary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-secondary: var(--secondary);
-  --color-secondary-foreground: var(--secondary-foreground);
-  --color-muted: var(--muted);
-  --color-muted-foreground: var(--muted-foreground);
-  --color-accent: var(--accent);
-  --color-accent-foreground: var(--accent-foreground);
-  --color-destructive: var(--destructive);
-  --color-border: var(--border);
-  --color-input: var(--input);
-  --color-ring: var(--ring);
-  --color-nav-button: var(--nav-button);
-  --color-hero-bg: var(--hero-bg);
-}
+    --card: 220 18% 11%;
+    --card-foreground: 0 0% 96%;
 
-:root {
-  --background: 0 0% 10%;
-  --foreground: 0 0% 96%;
-  --primary: 119 99% 46%;
-  --primary-foreground: 0 0% 4%;
-  --secondary: 0 0% 18%;
-  --secondary-foreground: 0 0% 96%;
-  --muted: 0 0% 16%;
-  --muted-foreground: 0 0% 60%;
-  --accent: 119 99% 46%;
-  --accent-foreground: 0 0% 4%;
-  --destructive: 0 84% 60%;
-  --border: 0 0% 20%;
-  --input: 0 0% 20%;
-  --ring: 119 99% 46%;
-  --radius: 0.5rem;
-  --nav-button: 0 0% 18%;
-  --hero-bg: 0 0% 8%;
+    --popover: 220 20% 8%;
+    --popover-foreground: 0 0% 96%;
+
+    --primary: 142 70% 45%;
+    --primary-foreground: 0 0% 4%;
+
+    --secondary: 220 15% 14%;
+    --secondary-foreground: 0 0% 96%;
+
+    --muted: 220 15% 12%;
+    --muted-foreground: 0 0% 55%;
+
+    --accent: 142 70% 45%;
+    --accent-foreground: 0 0% 4%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 96%;
+
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 4%;
+
+    --border: 220 15% 18%;
+    --input: 220 15% 14%;
+    --ring: 142 70% 45%;
+
+    --radius: 0.75rem;
+
+    --hero-bg: 220 20% 8%;
+  }
 }
 
 @layer base {
   * {
-    border-color: hsl(var(--border));
+    @apply border-border;
   }
   body {
-    background-color: hsl(var(--background));
-    color: hsl(var(--foreground));
-    font-family: var(--font-sora);
-    @apply antialiased;
+    @apply bg-background text-foreground font-sora antialiased;
   }
+}
+
+.bg-grid-primary {
+  background-image: linear-gradient(to right, hsl(var(--primary) / 0.1) 1px, transparent 1px),
+    linear-gradient(to bottom, hsl(var(--primary) / 0.1) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+@keyframes pulse-primary {
+  0%, 100% {
+    opacity: 0.4;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.6;
+    transform: scale(1.1);
+  }
+}
+
+.animate-pulse-primary {
+  animation: pulse-primary 4s ease-in-out infinite;
 }
