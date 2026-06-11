@@ -2,9 +2,11 @@ import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Label } from '@/components/ui/label';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { Loader2, User, Mail, Lock, ArrowRight, ShieldCheck } from 'lucide-react';
 
 export const Route = createFileRoute('/login')({
   component: Login,
@@ -74,73 +76,118 @@ function Login() {
   };
 
   return (
-    <div className="relative min-h-screen flex items-center justify-center overflow-hidden bg-background">
-      {/* Animated Background */}
-      <div className="absolute inset-0 z-0 overflow-hidden">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary/20 rounded-full blur-[120px] animate-pulse-primary" />
-        <div className="absolute top-1/4 left-1/4 w-[300px] h-[300px] bg-primary/10 rounded-full blur-[80px] animate-pulse-primary" style={{ animationDelay: '1s' }} />
+    <div className="relative min-h-screen flex items-center justify-center p-4 overflow-hidden bg-background">
+      {/* Dynamic Ambient Background */}
+      <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-primary/20 rounded-full blur-[120px] animate-pulse" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-primary/10 rounded-full blur-[120px] animate-pulse" style={{ animationDelay: '2s' }} />
+        <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 mix-blend-overlay" />
       </div>
 
-      <Card className="relative z-10 w-full max-w-md border-border bg-card/80 backdrop-blur-xl animate-fade-up">
-        <CardHeader className="text-center pb-2">
-          <CardTitle className="text-4xl font-bold tracking-tighter text-foreground">
-            SAMMA<span className="text-primary">.</span>
+      <Card className="relative z-10 w-full max-w-lg border-border/50 bg-card/40 backdrop-blur-2xl shadow-2xl animate-fade-up border">
+        <CardHeader className="text-center space-y-1 pt-8 pb-6">
+          <div className="mx-auto w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center mb-4 border border-primary/20">
+            <ShieldCheck className="w-7 h-7 text-primary" />
+          </div>
+          <CardTitle className="text-4xl font-bold tracking-tight text-foreground sm:text-5xl">
+            SAMMA<span className="text-primary italic">AI</span>
           </CardTitle>
-          <p className="text-muted-foreground text-sm uppercase tracking-widest font-medium mt-1">
-            Gestão de Vendas
-          </p>
+          <CardDescription className="text-muted-foreground font-medium uppercase tracking-[0.2em] text-xs">
+            Professional Sales Ecosystem
+          </CardDescription>
         </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4 mt-6">
-            {isSignUp && (
-              <div className="space-y-2 animate-fade-in">
-                <Input
-                  type="text"
-                  placeholder="Nome Completo"
-                  value={fullName}
-                  onChange={(e) => setFullName(e.target.value)}
-                  required
-                  className="bg-input border-border focus:ring-primary h-12"
-                />
+        
+        <CardContent className="px-8 pb-10">
+          <form onSubmit={handleSubmit} className="space-y-5">
+            <div className="space-y-4">
+              {isSignUp && (
+                <div className="space-y-2 animate-fade-in">
+                  <Label htmlFor="fullName" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground ml-1">
+                    Nome Completo
+                  </Label>
+                  <div className="relative group">
+                    <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground transition-colors group-focus-within:text-primary" />
+                    <Input
+                      id="fullName"
+                      placeholder="Ex: João Silva"
+                      value={fullName}
+                      onChange={(e) => setFullName(e.target.value)}
+                      required
+                      className="bg-background/50 border-border/50 focus:border-primary/50 focus:ring-primary/20 h-12 pl-10 transition-all"
+                    />
+                  </div>
+                </div>
+              )}
+              
+              <div className="space-y-2">
+                <Label htmlFor="email" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground ml-1">
+                  E-mail Corporativo
+                </Label>
+                <div className="relative group">
+                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground transition-colors group-focus-within:text-primary" />
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="voce@empresa.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                    className="bg-background/50 border-border/50 focus:border-primary/50 focus:ring-primary/20 h-12 pl-10 transition-all"
+                  />
+                </div>
               </div>
-            )}
-            <div className="space-y-2">
-              <Input
-                type="email"
-                placeholder="E-mail"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                className="bg-input border-border focus:ring-primary h-12"
-              />
+
+              <div className="space-y-2">
+                <Label htmlFor="password" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground ml-1">
+                  Senha
+                </Label>
+                <div className="relative group">
+                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground transition-colors group-focus-within:text-primary" />
+                  <Input
+                    id="password"
+                    type="password"
+                    placeholder="••••••••"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    className="bg-background/50 border-border/50 focus:border-primary/50 focus:ring-primary/20 h-12 pl-10 transition-all"
+                  />
+                </div>
+              </div>
             </div>
-            <div className="space-y-2">
-              <Input
-                type="password"
-                placeholder="Senha"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                className="bg-input border-border focus:ring-primary h-12"
-              />
-            </div>
+
             <Button
               type="submit"
               disabled={loading}
-              className="w-full h-12 bg-primary text-primary-foreground hover:bg-primary/90 font-bold transition-all"
+              className="w-full h-12 bg-primary text-primary-foreground hover:bg-primary/90 font-bold text-sm tracking-widest transition-all shadow-lg shadow-primary/20 group overflow-hidden"
             >
-              {loading ? (isSignUp ? 'Cadastrando...' : 'Entrando...') : (isSignUp ? 'CADASTRAR' : 'ENTRAR')}
+              {loading ? (
+                <Loader2 className="w-5 h-5 animate-spin mr-2" />
+              ) : (
+                <span className="flex items-center">
+                  {isSignUp ? 'FINALIZAR CADASTRO' : 'ACESSAR PLATAFORMA'}
+                  <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
+                </span>
+              )}
             </Button>
             
-            <div className="text-center mt-4">
-              <button
-                type="button"
-                onClick={() => setIsSignUp(!isSignUp)}
-                className="text-sm text-muted-foreground hover:text-primary transition-colors"
-              >
-                {isSignUp ? 'Já tem uma conta? Entre aqui' : 'Não tem uma conta? Cadastre-se'}
-              </button>
+            <div className="relative py-4">
+              <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t border-border/50" />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-transparent px-2 text-muted-foreground">Alternar modo</span>
+              </div>
             </div>
+
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setIsSignUp(!isSignUp)}
+              className="w-full h-12 border-border/50 bg-transparent hover:bg-muted/50 hover:text-primary transition-all font-medium text-xs tracking-wider"
+            >
+              {isSignUp ? 'JÁ POSSUI UMA CONTA? ENTRAR' : 'NOVO POR AQUI? SOLICITAR ACESSO'}
+            </Button>
           </form>
         </CardContent>
       </Card>
