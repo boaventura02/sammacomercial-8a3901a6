@@ -38,12 +38,16 @@ export type Database = {
       companies: {
         Row: {
           city_id: string
-          contract_end_date: string | null
+          contract_end_date: string
           created_at: string
+          has_outsourced: boolean | null
           id: string
           is_samma_client: boolean | null
           name: string
           notes: string | null
+          outsourced_services: string[] | null
+          responsible_contact: string
+          responsible_name: string
           seller_id: string
           service_type: string | null
           updated_at: string
@@ -51,12 +55,16 @@ export type Database = {
         }
         Insert: {
           city_id: string
-          contract_end_date?: string | null
+          contract_end_date: string
           created_at?: string
+          has_outsourced?: boolean | null
           id?: string
           is_samma_client?: boolean | null
           name: string
           notes?: string | null
+          outsourced_services?: string[] | null
+          responsible_contact: string
+          responsible_name: string
           seller_id: string
           service_type?: string | null
           updated_at?: string
@@ -64,12 +72,16 @@ export type Database = {
         }
         Update: {
           city_id?: string
-          contract_end_date?: string | null
+          contract_end_date?: string
           created_at?: string
+          has_outsourced?: boolean | null
           id?: string
           is_samma_client?: boolean | null
           name?: string
           notes?: string | null
+          outsourced_services?: string[] | null
+          responsible_contact?: string
+          responsible_name?: string
           seller_id?: string
           service_type?: string | null
           updated_at?: string
