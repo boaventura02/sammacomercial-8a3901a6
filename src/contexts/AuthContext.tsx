@@ -2,10 +2,12 @@ import { createContext, useContext, useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { User } from '@supabase/supabase-js';
 
+export type UserRole = 'admin' | 'seller';
+
 interface Profile {
   id: string;
   name: string;
-  role: 'admin' | 'seller';
+  role: UserRole;
   city_id?: string;
   avatar_url?: string;
 }
@@ -25,7 +27,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Check initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
       if (session?.user) {
@@ -35,7 +36,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     });
 
-    // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null);
       if (session?.user) {
@@ -58,7 +58,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         .single();
 
       if (error) throw error;
-      setProfile(data);
+      
+      // Type casting safely
+      const castedProfile: Profile = {
+        id: data.id,
+        name: data.name,
+        role: data.role as UserRole,
+        city_id: data.city_id,
+        avatar_url: data.avatar_url,
+      };
+      
+      setProfile(castedProfile);
     } catch (error) {
       console.error('Error fetching profile:', error);
     } finally {
@@ -80,9 +90,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 export function useAuth() {
   const context = useContext(AuthContext);
   if (context === undefined) {
-    throw new useAuthError('useAuth must be used within an AuthProvider');
+    throw new Error('useAuth must be used within an AuthProvider');
   }
   return context;
 }
-
-class useAuthError extends Error {}
