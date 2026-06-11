@@ -240,15 +240,6 @@ function MyCityPage() {
     return { total, served, won, notServed, percentage };
   }, [companies]);
 
-  const stats = useMemo(() => {
-    if (!companies) return { total: 0, served: 0, won: 0, notServed: 0, percentage: 0 };
-    const total = companies.length;
-    const served = companies.filter(c => ['already_client', 'won_by_seller'].includes(c.samma_status)).length;
-    const won = companies.filter(c => c.samma_status === 'won_by_seller').length;
-    const notServed = companies.filter(c => c.samma_status === 'not_served').length;
-    const percentage = total > 0 ? Number(((served / total) * 100).toFixed(1)) : 0;
-    return { total, served, won, notServed, percentage };
-  }, [companies]);
 
   const expiringContracts = useMemo(() => {
     if (!companies) return [];
