@@ -156,7 +156,7 @@ function ActivityPage() {
             .from('activity_items')
             .insert([{
                 daily_activity_id: activity.id,
-                type: type,
+                type: type as string,
                 company_id: companyId,
                 negotiation_status: formValues[`${type}_status`],
                 contract_status: formValues[`${type}_contract_status`],
