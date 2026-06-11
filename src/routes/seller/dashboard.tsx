@@ -87,6 +87,10 @@ function MyCityPage() {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [editingCompany, setEditingCompany] = useState<any>(null);
   const [serviceInput, setServiceInput] = useState("");
+  const [activeTab, setActiveTab] = useState("all");
+  const [isAlertsExpanded, setIsAlertsExpanded] = useState(true);
+  const [highlightedId, setHighlightedId] = useState<string | null>(null);
+  const gridRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
   const { data: companies, isLoading: loadingCompanies } = useQuery({
     queryKey: ['seller-companies', profile?.id],
@@ -95,13 +99,19 @@ function MyCityPage() {
       const { data, error } = await supabase
         .from('companies')
         .select('*')
-        .eq('seller_id', profile.id)
-        .order('name');
+        .eq('seller_id', profile.id);
       if (error) throw error;
       return data || [];
     },
     enabled: !!profile?.id,
   });
+
+  const sortedCompanies = useMemo(() => {
+    if (!companies) return [];
+    return [...companies].sort((a, b) => {
+      return new Date(a.contract_end_date).getTime() - new Date(b.contract_end_date).getTime();
+    });
+  }, [companies]);
 
   const {
     register,
@@ -115,6 +125,7 @@ function MyCityPage() {
     defaultValues: {
       has_outsourced: false,
       outsourced_services: [],
+      samma_status: 'not_served',
     }
   });
 
