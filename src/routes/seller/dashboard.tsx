@@ -474,7 +474,9 @@ function MyCityPage() {
               return (
                 <Card 
                   key={company.id} 
-                  ref={el => gridRefs.current[company.id] = el}
+                  ref={(el) => {
+                    gridRefs.current[company.id] = el;
+                  }}
                   className={cn(
                     "bg-card/40 backdrop-blur-md border-border/50 flex flex-col group hover:shadow-lg transition-all duration-300",
                     highlightedId === company.id ? "ring-2 ring-primary animate-pulse border-primary" : ""
