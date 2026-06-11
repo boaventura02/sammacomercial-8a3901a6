@@ -1,64 +1,106 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Card } from "@/components/ui/card";
-import { useAuth, AuthProvider } from "@/contexts/AuthContext";
+import { createFileRoute, useNavigate } from '@tanstack/react-router';
+import { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 
-export const Route = createFileRoute("/login")({
-  component: () => (
-    <AuthProvider>
-      <LoginPage />
-    </AuthProvider>
-  ),
+export const Route = createFileRoute('/login')({
+  component: Login,
 });
 
-function LoginPage() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+function Login() {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
-  const { profile } = useAuth();
-
-  useEffect(() => {
-    if (profile) {
-      navigate({ to: profile.role === "admin" ? "/admin/dashboard" : "/seller/dashboard" });
-    }
-  }, [profile, navigate]);
+  const { toast } = useToast();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setError(null);
-    const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
-    if (signInError) {
-      setError(signInError.message);
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (error) throw error;
+
+      // Fetch profile to determine role
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', data.user.id)
+        .single();
+
+      if (profileError) throw profileError;
+
+      if (profile.role === 'admin') {
+        navigate({ to: '/admin/dashboard' });
+      } else {
+        navigate({ to: '/seller/dashboard' });
+      }
+    } catch (error: any) {
+      toast({
+        title: 'Erro ao entrar',
+        description: error.message || 'Verifique suas credenciais.',
+        variant: 'destructive',
+      });
+    } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background relative overflow-hidden font-sora">
-      <div className="absolute inset-0 z-0">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-primary/10 rounded-full blur-[120px] animate-pulse" />
+    <div className="relative min-h-screen flex items-center justify-center overflow-hidden bg-background">
+      {/* Animated Background */}
+      <div className="absolute inset-0 z-0 overflow-hidden">
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary/20 rounded-full blur-[120px] animate-pulse-primary" />
+        <div className="absolute top-1/4 left-1/4 w-[300px] h-[300px] bg-primary/10 rounded-full blur-[80px] animate-pulse-primary" style={{ animationDelay: '1s' }} />
       </div>
 
-      <Card className="w-full max-w-md p-8 z-10 border-border bg-card/80 backdrop-blur-sm animate-fade-up">
-        <div className="flex flex-col items-center mb-8">
-          <h1 className="text-4xl font-bold tracking-tighter text-primary">SAMMA</h1>
-          <p className="text-muted-foreground mt-2 text-sm">Gestão de Equipes de Vendas</p>
-        </div>
-
-        <form onSubmit={handleLogin} className="space-y-4">
-          <Input type="email" placeholder="E-mail" value={email} onChange={(e) => setEmail(e.target.value)} required />
-          <Input type="password" placeholder="Senha" value={password} onChange={(e) => setPassword(e.target.value)} required />
-          {error && <p className="text-destructive text-sm text-center">{error}</p>}
-          <Button type="submit" className="w-full" disabled={loading}>
-            {loading ? "Entrando..." : "Entrar"}
-          </Button>
-        </form>
+      <Card className="relative z-10 w-full max-w-md border-border bg-card/80 backdrop-blur-xl animate-fade-up">
+        <CardHeader className="text-center pb-2">
+          <CardTitle className="text-4xl font-bold tracking-tighter text-foreground">
+            SAMMA<span className="text-primary">.</span>
+          </CardTitle>
+          <p className="text-muted-foreground text-sm uppercase tracking-widest font-medium mt-1">
+            Gestão de Vendas
+          </p>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleLogin} className="space-y-4 mt-6">
+            <div className="space-y-2">
+              <Input
+                type="email"
+                placeholder="E-mail"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                className="bg-input border-border focus:ring-primary h-12"
+              />
+            </div>
+            <div className="space-y-2">
+              <Input
+                type="password"
+                placeholder="Senha"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                className="bg-input border-border focus:ring-primary h-12"
+              />
+            </div>
+            <Button
+              type="submit"
+              disabled={loading}
+              className="w-full h-12 bg-primary text-primary-foreground hover:bg-primary/90 font-bold transition-all"
+            >
+              {loading ? 'Entrando...' : 'ENTRAR'}
+            </Button>
+          </form>
+        </CardContent>
       </Card>
     </div>
   );
