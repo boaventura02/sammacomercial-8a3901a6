@@ -17,7 +17,7 @@ function SellerLayout() {
   return (
     <div className="flex min-h-screen bg-background text-foreground overflow-hidden">
       <Sidebar role="seller" name={profile.name} />
-      <main className="flex-1 overflow-y-auto p-4 md:p-8 animate-fade-in">
+      <main className="flex-1 overflow-y-auto p-4 md:p-8 animate-fade-in md:ml-0 transition-all duration-300">
         <Outlet />
       </main>
     </div>
