@@ -557,6 +557,15 @@ function ActivityPage() {
                                         {type === 'new_company' && (
                                             <p className="text-sm ml-2">→ Empresa: {formValues.new_company_name}</p>
                                         )}
+                                        {type === 'contract_expiring' && (
+                                            <>
+                                                <p className="text-sm ml-2">→ Empresa: {companies?.find((c: any) => c.id === formValues.contract_expiring_company_id)?.name}</p>
+                                                <p className="text-sm ml-2">→ Encaminhamento: {formValues.contract_expiring_contract_status}</p>
+                                            </>
+                                        )}
+                                        {type === 'other' && (
+                                            <p className="text-sm ml-2">→ Descrição: {formValues.other_description}</p>
+                                        )}
                                     </div>
                                 ))}
 
