@@ -7,7 +7,7 @@ export function Navbar() {
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 flex justify-between items-center px-8 lg:px-16 py-8 bg-transparent">
       <div className="text-white text-2xl font-bold tracking-tighter uppercase italic">
-        SAMMA<span className="text-primary">.</span>
+        Sentinel<span className="text-[#2df42d]">.</span>
       </div>
 
       <div className="hidden md:flex gap-10">
@@ -25,7 +25,7 @@ export function Navbar() {
       <Button
         variant="navCta"
         onClick={() => window.location.href = '/login'}
-        className="hidden md:inline-flex rounded-none uppercase text-[10px] font-bold tracking-[0.2em] px-8 py-6 bg-white text-black hover:bg-primary hover:text-primary-foreground transition-all border-none"
+        className="hidden md:inline-flex rounded-none uppercase text-[10px] font-bold tracking-[0.2em] px-8 py-6 bg-white text-black hover:bg-[#2df42d] hover:text-black transition-all border-none"
       >
         Entrar
       </Button>
