@@ -43,6 +43,7 @@ const companySchema = z.object({
   contract_end_date: z.string().min(1, "Data de vencimento é obrigatória"),
   responsible_name: z.string().min(2, "Nome do responsável deve ter pelo menos 2 caracteres"),
   responsible_contact: z.string().min(1, "Contato é obrigatório"),
+  samma_status: z.enum(['already_client', 'won_by_seller', 'not_served']),
 }).refine((data) => {
   if (data.has_outsourced && data.outsourced_services.length === 0) {
     return false;
