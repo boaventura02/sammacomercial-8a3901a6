@@ -1,10 +1,11 @@
-import { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { useAuth } from "@/contexts/AuthContext";
+
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -36,9 +37,12 @@ export default function Login() {
   };
 
   // Immediate redirect if already logged in
-  if (profile) {
-    navigate(profile.role === "admin" ? "/admin/dashboard" : "/seller/dashboard");
-  }
+  useEffect(() => {
+    if (profile) {
+      navigate(profile.role === "admin" ? "/admin/dashboard" : "/seller/dashboard");
+    }
+  }, [profile, navigate]);
+
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background relative overflow-hidden">
