@@ -146,6 +146,7 @@ function MyCityPage() {
         contract_end_date: values.contract_end_date,
         responsible_name: values.responsible_name,
         responsible_contact: values.responsible_contact,
+        samma_status: values.samma_status,
         seller_id: profile.id,
         city_id: profile.city_id,
         updated_at: new Date().toISOString(),
