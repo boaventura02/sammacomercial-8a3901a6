@@ -14,6 +14,7 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as SellerDashboardRouteImport } from './routes/seller/dashboard'
+import { Route as SellerAtividadesRouteImport } from './routes/seller/atividades'
 import { Route as AdminDashboardRouteImport } from './routes/admin/dashboard'
 
 const SellerRoute = SellerRouteImport.update({
@@ -41,6 +42,11 @@ const SellerDashboardRoute = SellerDashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => SellerRoute,
 } as any)
+const SellerAtividadesRoute = SellerAtividadesRouteImport.update({
+  id: '/atividades',
+  path: '/atividades',
+  getParentRoute: () => SellerRoute,
+} as any)
 const AdminDashboardRoute = AdminDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
@@ -53,6 +59,7 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/seller': typeof SellerRouteWithChildren
   '/admin/dashboard': typeof AdminDashboardRoute
+  '/seller/atividades': typeof SellerAtividadesRoute
   '/seller/dashboard': typeof SellerDashboardRoute
 }
 export interface FileRoutesByTo {
@@ -61,6 +68,7 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/seller': typeof SellerRouteWithChildren
   '/admin/dashboard': typeof AdminDashboardRoute
+  '/seller/atividades': typeof SellerAtividadesRoute
   '/seller/dashboard': typeof SellerDashboardRoute
 }
 export interface FileRoutesById {
@@ -70,6 +78,7 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/seller': typeof SellerRouteWithChildren
   '/admin/dashboard': typeof AdminDashboardRoute
+  '/seller/atividades': typeof SellerAtividadesRoute
   '/seller/dashboard': typeof SellerDashboardRoute
 }
 export interface FileRouteTypes {
@@ -80,6 +89,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/seller'
     | '/admin/dashboard'
+    | '/seller/atividades'
     | '/seller/dashboard'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -88,6 +98,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/seller'
     | '/admin/dashboard'
+    | '/seller/atividades'
     | '/seller/dashboard'
   id:
     | '__root__'
@@ -96,6 +107,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/seller'
     | '/admin/dashboard'
+    | '/seller/atividades'
     | '/seller/dashboard'
   fileRoutesById: FileRoutesById
 }
@@ -143,6 +155,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SellerDashboardRouteImport
       parentRoute: typeof SellerRoute
     }
+    '/seller/atividades': {
+      id: '/seller/atividades'
+      path: '/atividades'
+      fullPath: '/seller/atividades'
+      preLoaderRoute: typeof SellerAtividadesRouteImport
+      parentRoute: typeof SellerRoute
+    }
     '/admin/dashboard': {
       id: '/admin/dashboard'
       path: '/dashboard'
@@ -164,10 +183,12 @@ const AdminRouteChildren: AdminRouteChildren = {
 const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
 
 interface SellerRouteChildren {
+  SellerAtividadesRoute: typeof SellerAtividadesRoute
   SellerDashboardRoute: typeof SellerDashboardRoute
 }
 
 const SellerRouteChildren: SellerRouteChildren = {
+  SellerAtividadesRoute: SellerAtividadesRoute,
   SellerDashboardRoute: SellerDashboardRoute,
 }
 
