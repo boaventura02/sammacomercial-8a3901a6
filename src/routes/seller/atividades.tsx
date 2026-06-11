@@ -425,7 +425,7 @@ function ActivityPage() {
                                     onChange={(e) => setFormValues({...formValues, contract_expiring_company_id: e.target.value})}
                                 >
                                     <option value="">Selecione uma empresa (vence em breve)</option>
-                                    {expiringCompanies.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                                    {expiringCompanies.map((c: any) => <option key={c.id} value={c.id}>{c.name}</option>)}
                                 </select>
                             </div>
                             <div className="space-y-2">
