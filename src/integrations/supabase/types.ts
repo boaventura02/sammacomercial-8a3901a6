@@ -14,6 +14,54 @@ export type Database = {
   }
   public: {
     Tables: {
+      activity_items: {
+        Row: {
+          company_id: string | null
+          contract_status: string | null
+          created_at: string | null
+          daily_activity_id: string
+          id: string
+          negotiation_status: string | null
+          other_description: string | null
+          type: string
+        }
+        Insert: {
+          company_id?: string | null
+          contract_status?: string | null
+          created_at?: string | null
+          daily_activity_id: string
+          id?: string
+          negotiation_status?: string | null
+          other_description?: string | null
+          type: string
+        }
+        Update: {
+          company_id?: string | null
+          contract_status?: string | null
+          created_at?: string | null
+          daily_activity_id?: string
+          id?: string
+          negotiation_status?: string | null
+          other_description?: string | null
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "activity_items_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "activity_items_daily_activity_id_fkey"
+            columns: ["daily_activity_id"]
+            isOneToOne: false
+            referencedRelation: "daily_activities"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       cities: {
         Row: {
           created_at: string
@@ -156,6 +204,7 @@ export type Database = {
           city_id: string
           created_at: string
           description: string
+          general_notes: string | null
           id: string
           location: string | null
           photo_url: string | null
@@ -167,6 +216,7 @@ export type Database = {
           city_id: string
           created_at?: string
           description: string
+          general_notes?: string | null
           id?: string
           location?: string | null
           photo_url?: string | null
@@ -178,6 +228,7 @@ export type Database = {
           city_id?: string
           created_at?: string
           description?: string
+          general_notes?: string | null
           id?: string
           location?: string | null
           photo_url?: string | null
