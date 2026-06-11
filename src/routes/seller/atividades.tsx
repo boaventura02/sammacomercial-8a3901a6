@@ -314,10 +314,10 @@ function ActivityPage() {
 
       {/* Wizard Modal */}
       <Dialog open={isWizardOpen} onOpenChange={(open) => !open && resetWizard()}>
-        <DialogContent className="max-w-[560px] p-0 overflow-hidden flex flex-col h-[90vh] md:h-auto">
-          <DialogHeader className="p-4 border-b">
+        <DialogContent className="max-w-[560px] p-0 overflow-hidden flex flex-col h-[90vh] md:h-auto max-h-[90vh]">
+          <DialogHeader className="p-4 border-b shrink-0">
             <div className="flex items-center justify-between">
-              <DialogTitle>Step {step} of 3</DialogTitle>
+              <DialogTitle>Passo {step} de 3</DialogTitle>
               <div className="flex gap-1">
                 {[1, 2, 3].map(s => (
                   <div key={s} className={cn("h-1.5 w-8 rounded-full transition-all", step >= s ? "bg-green-600" : "bg-muted")} />
@@ -326,8 +326,9 @@ function ActivityPage() {
             </div>
           </DialogHeader>
 
-          <div className="flex-1 overflow-y-auto p-6">
+          <div className="flex-1 overflow-y-auto p-6 min-h-0">
             {step === 1 && (
+
               <div className="space-y-6 animate-in slide-in-from-right-4 duration-300">
                 <div className="text-center space-y-1">
                   <h2 className="text-xl font-bold">O que você fez hoje?</h2>
