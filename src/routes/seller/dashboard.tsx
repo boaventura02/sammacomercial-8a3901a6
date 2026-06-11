@@ -33,13 +33,12 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { format, parseISO, differenceInDays, isBefore } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 
 const companySchema = z.object({
   name: z.string().min(2, "O nome deve ter pelo menos 2 caracteres"),
-  has_outsourced: z.boolean().default(false),
+  has_outsourced: z.boolean(),
   outsourced_services: z.array(z.string()).min(0),
   contract_end_date: z.string().min(1, "Data de vencimento é obrigatória"),
   responsible_name: z.string().min(2, "Nome do responsável deve ter pelo menos 2 caracteres"),
@@ -71,13 +70,14 @@ function MyCityPage() {
   const { data: companies, isLoading: loadingCompanies } = useQuery({
     queryKey: ['seller-companies', profile?.id],
     queryFn: async () => {
+      if (!profile?.id) return [];
       const { data, error } = await supabase
         .from('companies')
         .select('*')
-        .eq('seller_id', profile?.id)
+        .eq('seller_id', profile.id)
         .order('name');
       if (error) throw error;
-      return data;
+      return data || [];
     },
     enabled: !!profile?.id,
   });
@@ -103,8 +103,17 @@ function MyCityPage() {
 
   const upsertMutation = useMutation({
     mutationFn: async (values: CompanyFormValues) => {
+      if (!profile?.id || !profile?.city_id) {
+        throw new Error("Perfil incompleto");
+      }
+
       const payload = {
-        ...values,
+        name: values.name,
+        has_outsourced: values.has_outsourced,
+        outsourced_services: values.outsourced_services,
+        contract_end_date: values.contract_end_date,
+        responsible_name: values.responsible_name,
+        responsible_contact: values.responsible_contact,
         seller_id: profile.id,
         city_id: profile.city_id,
         updated_at: new Date().toISOString(),
@@ -130,7 +139,8 @@ function MyCityPage() {
       });
       handleCloseDrawer();
     },
-    onError: () => {
+    onError: (error) => {
+      console.error(error);
       toast({
         title: "Erro ao processar solicitação",
         description: "Tente novamente mais tarde.",
@@ -144,7 +154,7 @@ function MyCityPage() {
       setEditingCompany(company);
       reset({
         name: company.name,
-        has_outsourced: company.has_outsourced,
+        has_outsourced: !!company.has_outsourced,
         outsourced_services: company.outsourced_services || [],
         contract_end_date: company.contract_end_date,
         responsible_name: company.responsible_name,
@@ -255,9 +265,9 @@ function MyCityPage() {
                   </Badge>
                 </div>
 
-                {company.has_outsourced && company.outsourced_services?.length > 0 && (
+                {company.has_outsourced && company.outsourced_services && (company.outsourced_services as string[]).length > 0 && (
                   <div className="flex flex-wrap gap-1">
-                    {company.outsourced_services.map((service: string) => (
+                    {(company.outsourced_services as string[]).map((service: string) => (
                       <Badge key={service} variant="secondary" className="text-[10px] py-0">
                         {service}
                       </Badge>
@@ -300,7 +310,7 @@ function MyCityPage() {
       </Button>
 
       <Sheet open={isDrawerOpen} onOpenChange={setIsDrawerOpen}>
-        <SheetContent className="w-full sm:max-w-[480px] p-0 flex flex-col">
+        <SheetContent className="w-full sm:max-w-[480px] p-0 flex flex-col" onPointerDownOutside={(e) => e.preventDefault()}>
           <SheetHeader className="p-6 border-b">
             <div className="flex items-center justify-between">
               <SheetTitle className="text-2xl font-bold">
@@ -411,7 +421,7 @@ function MyCityPage() {
             </form>
           </div>
 
-          <SheetFooter className="p-6 border-t bg-card mt-auto sm:flex-row gap-2">
+          <SheetFooter className="p-6 border-t bg-card mt-auto flex flex-row gap-2">
             <Button variant="ghost" className="flex-1" onClick={handleCloseDrawer}>
               Cancelar
             </Button>
