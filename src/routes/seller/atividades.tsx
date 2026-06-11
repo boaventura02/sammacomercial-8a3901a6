@@ -272,7 +272,7 @@ function ActivityPage() {
                 </div>
                 
                 <div className="space-y-3">
-                  {(activity.activity_items as any[])?.map((item: any) => (
+                  {(activity.activity_items as any[])?.sort((a: any, b: any) => a.type === 'new_company' ? 1 : -1).map((item: any) => (
                     <div key={item.id} className="flex flex-col gap-1 p-2 rounded-lg bg-background/40">
                       <div className="flex items-center gap-2 text-sm font-medium">
                         {(() => {
