@@ -643,6 +643,37 @@ function MyCityPage() {
                 {errors.contract_end_date && <p className="text-xs text-destructive">{errors.contract_end_date.message}</p>}
               </div>
 
+              <div className="space-y-3">
+                <Label>Situação com a SAMMA *</Label>
+                <RadioGroup 
+                  defaultValue="not_served" 
+                  className="grid grid-cols-1 gap-3"
+                  value={watch("samma_status")}
+                  onValueChange={(val: any) => setValue("samma_status", val)}
+                >
+                  {[
+                    { id: 'already_client', label: 'Já era cliente SAMMA', desc: 'A empresa já era cliente antes do meu trabalho' },
+                    { id: 'won_by_seller', label: 'Cliente conquistado por mim', desc: 'Eu prospectei e agora a SAMMA atende' },
+                    { id: 'not_served', label: 'Ainda não atendida', desc: 'Cadastrada para monitoramento apenas' }
+                  ].map((option) => (
+                    <Label
+                      key={option.id}
+                      className={cn(
+                        "flex flex-col gap-1 p-4 rounded-xl border-2 cursor-pointer transition-all hover:bg-muted/50",
+                        watch("samma_status") === option.id ? "border-primary bg-primary/5" : "border-border"
+                      )}
+                    >
+                      <div className="flex items-center gap-2">
+                        <RadioGroupItem value={option.id} id={option.id} />
+                        <span className="font-bold">{option.label}</span>
+                      </div>
+                      <span className="text-xs text-muted-foreground ml-6">{option.desc}</span>
+                    </Label>
+                  ))}
+                </RadioGroup>
+                {errors.samma_status && <p className="text-xs text-destructive">{errors.samma_status.message}</p>}
+              </div>
+
               <div className="space-y-2">
                 <Label htmlFor="responsible_name">Nome do responsável pelo contrato *</Label>
                 <Input 
