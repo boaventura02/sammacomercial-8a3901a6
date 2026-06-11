@@ -14,7 +14,218 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      cities: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          state: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          state: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          state?: string
+        }
+        Relationships: []
+      }
+      companies: {
+        Row: {
+          city_id: string
+          contract_end_date: string | null
+          created_at: string
+          id: string
+          is_samma_client: boolean | null
+          name: string
+          notes: string | null
+          seller_id: string
+          service_type: string | null
+          updated_at: string
+          workforce_count: number | null
+        }
+        Insert: {
+          city_id: string
+          contract_end_date?: string | null
+          created_at?: string
+          id?: string
+          is_samma_client?: boolean | null
+          name: string
+          notes?: string | null
+          seller_id: string
+          service_type?: string | null
+          updated_at?: string
+          workforce_count?: number | null
+        }
+        Update: {
+          city_id?: string
+          contract_end_date?: string | null
+          created_at?: string
+          id?: string
+          is_samma_client?: boolean | null
+          name?: string
+          notes?: string | null
+          seller_id?: string
+          service_type?: string | null
+          updated_at?: string
+          workforce_count?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "companies_city_id_fkey"
+            columns: ["city_id"]
+            isOneToOne: false
+            referencedRelation: "cities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "companies_seller_id_fkey"
+            columns: ["seller_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      contacts: {
+        Row: {
+          company_id: string
+          contact_date: string
+          contact_type: string
+          created_at: string
+          id: string
+          notes: string | null
+          seller_id: string
+        }
+        Insert: {
+          company_id: string
+          contact_date?: string
+          contact_type: string
+          created_at?: string
+          id?: string
+          notes?: string | null
+          seller_id: string
+        }
+        Update: {
+          company_id?: string
+          contact_date?: string
+          contact_type?: string
+          created_at?: string
+          id?: string
+          notes?: string | null
+          seller_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contacts_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contacts_seller_id_fkey"
+            columns: ["seller_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      daily_activities: {
+        Row: {
+          activity_date: string
+          activity_types: string[]
+          city_id: string
+          created_at: string
+          description: string
+          id: string
+          location: string | null
+          photo_url: string | null
+          seller_id: string
+        }
+        Insert: {
+          activity_date?: string
+          activity_types: string[]
+          city_id: string
+          created_at?: string
+          description: string
+          id?: string
+          location?: string | null
+          photo_url?: string | null
+          seller_id: string
+        }
+        Update: {
+          activity_date?: string
+          activity_types?: string[]
+          city_id?: string
+          created_at?: string
+          description?: string
+          id?: string
+          location?: string | null
+          photo_url?: string | null
+          seller_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "daily_activities_city_id_fkey"
+            columns: ["city_id"]
+            isOneToOne: false
+            referencedRelation: "cities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "daily_activities_seller_id_fkey"
+            columns: ["seller_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          city_id: string | null
+          created_at: string
+          id: string
+          name: string
+          role: string
+          updated_at: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          city_id?: string | null
+          created_at?: string
+          id: string
+          name: string
+          role: string
+          updated_at?: string
+        }
+        Update: {
+          avatar_url?: string | null
+          city_id?: string | null
+          created_at?: string
+          id?: string
+          name?: string
+          role?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profiles_city_id_fkey"
+            columns: ["city_id"]
+            isOneToOne: false
+            referencedRelation: "cities"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
