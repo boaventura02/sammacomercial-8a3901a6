@@ -13,6 +13,7 @@ import { Route as SellerRouteImport } from './routes/seller'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as SellerEmpresasRouteImport } from './routes/seller/empresas'
 import { Route as SellerDashboardRouteImport } from './routes/seller/dashboard'
 import { Route as SellerAtividadesRouteImport } from './routes/seller/atividades'
 import { Route as AdminDashboardRouteImport } from './routes/admin/dashboard'
@@ -36,6 +37,11 @@ const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
+} as any)
+const SellerEmpresasRoute = SellerEmpresasRouteImport.update({
+  id: '/empresas',
+  path: '/empresas',
+  getParentRoute: () => SellerRoute,
 } as any)
 const SellerDashboardRoute = SellerDashboardRouteImport.update({
   id: '/dashboard',
@@ -61,6 +67,7 @@ export interface FileRoutesByFullPath {
   '/admin/dashboard': typeof AdminDashboardRoute
   '/seller/atividades': typeof SellerAtividadesRoute
   '/seller/dashboard': typeof SellerDashboardRoute
+  '/seller/empresas': typeof SellerEmpresasRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -70,6 +77,7 @@ export interface FileRoutesByTo {
   '/admin/dashboard': typeof AdminDashboardRoute
   '/seller/atividades': typeof SellerAtividadesRoute
   '/seller/dashboard': typeof SellerDashboardRoute
+  '/seller/empresas': typeof SellerEmpresasRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -80,6 +88,7 @@ export interface FileRoutesById {
   '/admin/dashboard': typeof AdminDashboardRoute
   '/seller/atividades': typeof SellerAtividadesRoute
   '/seller/dashboard': typeof SellerDashboardRoute
+  '/seller/empresas': typeof SellerEmpresasRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -91,6 +100,7 @@ export interface FileRouteTypes {
     | '/admin/dashboard'
     | '/seller/atividades'
     | '/seller/dashboard'
+    | '/seller/empresas'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -100,6 +110,7 @@ export interface FileRouteTypes {
     | '/admin/dashboard'
     | '/seller/atividades'
     | '/seller/dashboard'
+    | '/seller/empresas'
   id:
     | '__root__'
     | '/'
@@ -109,6 +120,7 @@ export interface FileRouteTypes {
     | '/admin/dashboard'
     | '/seller/atividades'
     | '/seller/dashboard'
+    | '/seller/empresas'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -148,6 +160,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/seller/empresas': {
+      id: '/seller/empresas'
+      path: '/empresas'
+      fullPath: '/seller/empresas'
+      preLoaderRoute: typeof SellerEmpresasRouteImport
+      parentRoute: typeof SellerRoute
+    }
     '/seller/dashboard': {
       id: '/seller/dashboard'
       path: '/dashboard'
@@ -185,11 +204,13 @@ const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
 interface SellerRouteChildren {
   SellerAtividadesRoute: typeof SellerAtividadesRoute
   SellerDashboardRoute: typeof SellerDashboardRoute
+  SellerEmpresasRoute: typeof SellerEmpresasRoute
 }
 
 const SellerRouteChildren: SellerRouteChildren = {
   SellerAtividadesRoute: SellerAtividadesRoute,
   SellerDashboardRoute: SellerDashboardRoute,
+  SellerEmpresasRoute: SellerEmpresasRoute,
 }
 
 const SellerRouteWithChildren =
@@ -204,3 +225,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
