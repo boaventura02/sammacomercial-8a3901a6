@@ -541,7 +541,7 @@ function ActivityPage() {
                             </div>
 
                             <div className="space-y-4">
-                                {selectedTypes.map(type => (
+                                {selectedTypes.sort((a, b) => a === 'new_company' ? 1 : -1).map(type => (
                                     <div key={type} className="space-y-1">
                                         <div className="flex items-center gap-2">
                                             <Badge variant="outline" className="bg-green-100 text-green-700 border-green-200">
