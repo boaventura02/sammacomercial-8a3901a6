@@ -6,7 +6,8 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Label } from '@/components/ui/label';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, User, Mail, Lock, ArrowRight, ShieldCheck, Eye, EyeOff } from 'lucide-react';
+import { Loader2, User, Mail, Lock, ArrowRight, ShieldCheck, Eye, EyeOff, Briefcase, MapPin } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export const Route = createFileRoute('/login')({
   component: Login,
@@ -19,6 +20,8 @@ function Login() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [fullName, setFullName] = useState('');
+  const [role, setRole] = useState<'seller' | 'admin'>('seller');
+  const [city, setCity] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -37,13 +40,25 @@ function Login() {
           setLoading(false);
           return;
         }
+
+        if (role === 'seller' && !city.trim()) {
+          toast({
+            title: 'Campo obrigatório',
+            description: 'Vendedores devem informar a cidade de atuação.',
+            variant: 'destructive',
+          });
+          setLoading(false);
+          return;
+        }
+
         const { error } = await supabase.auth.signUp({
           email,
           password,
           options: {
             data: {
               name: fullName,
-              role: 'seller', // Default role
+              role: role,
+              city: role === 'seller' ? city : null,
             },
           },
         });
@@ -112,22 +127,61 @@ function Login() {
           <form onSubmit={handleSubmit} className="space-y-5">
             <div className="space-y-4">
               {isSignUp && (
-                <div className="space-y-2 animate-fade-in">
-                  <Label htmlFor="fullName" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground ml-1">
-                    Nome Completo
-                  </Label>
-                  <div className="relative group">
-                    <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground transition-colors group-focus-within:text-primary" />
-                    <Input
-                      id="fullName"
-                      placeholder="Ex: João Silva"
-                      value={fullName}
-                      onChange={(e) => setFullName(e.target.value)}
-                      required
-                      className="bg-background/50 border-border/50 focus:border-primary/50 focus:ring-primary/20 h-12 pl-10 transition-all"
-                    />
+                <>
+                  <div className="space-y-2 animate-fade-in">
+                    <Label htmlFor="fullName" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground ml-1">
+                      Nome Completo
+                    </Label>
+                    <div className="relative group">
+                      <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground transition-colors group-focus-within:text-primary" />
+                      <Input
+                        id="fullName"
+                        placeholder="Ex: João Silva"
+                        value={fullName}
+                        onChange={(e) => setFullName(e.target.value)}
+                        required
+                        className="bg-background/50 border-border/50 focus:border-primary/50 focus:ring-primary/20 h-12 pl-10 transition-all"
+                      />
+                    </div>
                   </div>
-                </div>
+
+                  <div className="space-y-2 animate-fade-in">
+                    <Label htmlFor="role" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground ml-1">
+                      Perfil de Acesso
+                    </Label>
+                    <div className="relative group">
+                      <Briefcase className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground z-10" />
+                      <Select value={role} onValueChange={(value: 'seller' | 'admin') => setRole(value)}>
+                        <SelectTrigger className="bg-background/50 border-border/50 focus:border-primary/50 focus:ring-primary/20 h-12 pl-10 transition-all">
+                          <SelectValue placeholder="Selecione o perfil" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="seller">Vendedor</SelectItem>
+                          <SelectItem value="admin">Gestor</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+
+                  {role === 'seller' && (
+                    <div className="space-y-2 animate-fade-in">
+                      <Label htmlFor="city" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground ml-1">
+                        Cidade de Atuação
+                      </Label>
+                      <div className="relative group">
+                        <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground transition-colors group-focus-within:text-primary" />
+                        <Input
+                          id="city"
+                          placeholder="Ex: São Paulo"
+                          value={city}
+                          onChange={(e) => setCity(e.target.value)}
+                          required
+                          className="bg-background/50 border-border/50 focus:border-primary/50 focus:ring-primary/20 h-12 pl-10 transition-all"
+                        />
+                      </div>
+                    </div>
+                  )}
+                </>
               )}
               
               <div className="space-y-2">
