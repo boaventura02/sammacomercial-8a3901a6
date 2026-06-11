@@ -369,9 +369,16 @@ function ActivityPage() {
                 {selectedTypes.map((type) => (
                   <div key={type} className="space-y-4 p-4 rounded-lg bg-card border border-border">
                     <div className="flex items-center gap-2 border-b border-border pb-2">
-                        {ACTIVITY_TYPES.find(t => t.id === type)?.icon && 
-                            <div className="text-primary">{ACTIVITY_TYPES.find(t => t.id === type)?.label}</div>
-                        }
+                      {(() => {
+                        const config = ACTIVITY_TYPES.find(t => t.id === type);
+                        const Icon = config?.icon;
+                        return (
+                          <>
+                            {Icon && <Icon className="w-4 h-4 text-primary" />}
+                            <span className="font-semibold text-sm text-primary">{config?.label}</span>
+                          </>
+                        );
+                      })()}
                     </div>
                     
                     {['visit', 'call', 'negotiation'].includes(type) && (
