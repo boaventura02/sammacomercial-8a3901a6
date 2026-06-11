@@ -13,6 +13,7 @@ import { Route as SellerRouteImport } from './routes/seller'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as SellerDashboardRouteImport } from './routes/seller/dashboard'
 import { Route as AdminDashboardRouteImport } from './routes/admin/dashboard'
 
 const SellerRoute = SellerRouteImport.update({
@@ -35,6 +36,11 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SellerDashboardRoute = SellerDashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => SellerRoute,
+} as any)
 const AdminDashboardRoute = AdminDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
@@ -45,37 +51,59 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
   '/login': typeof LoginRoute
-  '/seller': typeof SellerRoute
+  '/seller': typeof SellerRouteWithChildren
   '/admin/dashboard': typeof AdminDashboardRoute
+  '/seller/dashboard': typeof SellerDashboardRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
   '/login': typeof LoginRoute
-  '/seller': typeof SellerRoute
+  '/seller': typeof SellerRouteWithChildren
   '/admin/dashboard': typeof AdminDashboardRoute
+  '/seller/dashboard': typeof SellerDashboardRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
   '/login': typeof LoginRoute
-  '/seller': typeof SellerRoute
+  '/seller': typeof SellerRouteWithChildren
   '/admin/dashboard': typeof AdminDashboardRoute
+  '/seller/dashboard': typeof SellerDashboardRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/admin' | '/login' | '/seller' | '/admin/dashboard'
+  fullPaths:
+    | '/'
+    | '/admin'
+    | '/login'
+    | '/seller'
+    | '/admin/dashboard'
+    | '/seller/dashboard'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/admin' | '/login' | '/seller' | '/admin/dashboard'
-  id: '__root__' | '/' | '/admin' | '/login' | '/seller' | '/admin/dashboard'
+  to:
+    | '/'
+    | '/admin'
+    | '/login'
+    | '/seller'
+    | '/admin/dashboard'
+    | '/seller/dashboard'
+  id:
+    | '__root__'
+    | '/'
+    | '/admin'
+    | '/login'
+    | '/seller'
+    | '/admin/dashboard'
+    | '/seller/dashboard'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRouteWithChildren
   LoginRoute: typeof LoginRoute
-  SellerRoute: typeof SellerRoute
+  SellerRoute: typeof SellerRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
@@ -108,6 +136,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/seller/dashboard': {
+      id: '/seller/dashboard'
+      path: '/dashboard'
+      fullPath: '/seller/dashboard'
+      preLoaderRoute: typeof SellerDashboardRouteImport
+      parentRoute: typeof SellerRoute
+    }
     '/admin/dashboard': {
       id: '/admin/dashboard'
       path: '/dashboard'
@@ -128,11 +163,22 @@ const AdminRouteChildren: AdminRouteChildren = {
 
 const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
 
+interface SellerRouteChildren {
+  SellerDashboardRoute: typeof SellerDashboardRoute
+}
+
+const SellerRouteChildren: SellerRouteChildren = {
+  SellerDashboardRoute: SellerDashboardRoute,
+}
+
+const SellerRouteWithChildren =
+  SellerRoute._addFileChildren(SellerRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRouteWithChildren,
   LoginRoute: LoginRoute,
-  SellerRoute: SellerRoute,
+  SellerRoute: SellerRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
