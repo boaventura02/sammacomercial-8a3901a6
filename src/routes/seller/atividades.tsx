@@ -583,7 +583,7 @@ function ActivityPage() {
             )}
           </div>
 
-          <DialogFooter className="p-4 border-t flex flex-row gap-3 bg-muted/5">
+          <DialogFooter className="p-4 border-t flex flex-row gap-3 bg-muted/5 shrink-0">
             {step > 1 && (
               <Button variant="ghost" onClick={() => setStep(step - 1)} className="flex-1">
                 <ChevronLeft className="w-4 h-4 mr-2" /> Voltar
@@ -608,6 +608,7 @@ function ActivityPage() {
               </Button>
             )}
           </DialogFooter>
+
         </DialogContent>
       </Dialog>
     </div>
