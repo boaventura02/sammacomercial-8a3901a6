@@ -80,9 +80,6 @@ export const Route = createFileRoute('/seller/dashboard')({
   component: MyCityPage,
 });
 
-export const EmpresasRoute = createFileRoute('/seller/empresas' as any)({
-  component: MyCityPage,
-});
 
 function MyCityPage() {
   const { profile } = useAuth();
