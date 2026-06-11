@@ -275,12 +275,14 @@ function ActivityPage() {
                   {activity.activity_items?.map((item: any) => (
                     <div key={item.id} className="flex flex-col gap-1 p-2 rounded-lg bg-background/40">
                       <div className="flex items-center gap-2 text-sm font-medium">
-                        {ACTIVITY_TYPES.find(t => t.id === item.type)?.icon && 
-                            <item.type_icon className="w-4 h-4 text-primary" />
-                        }
+                        {(() => {
+                          const config = ACTIVITY_TYPES.find(t => t.id === item.type);
+                          const Icon = config?.icon;
+                          return Icon ? <Icon className="w-4 h-4 text-primary" /> : null;
+                        })()}
                         <span className="capitalize">{ACTIVITY_TYPES.find(t => t.id === item.type)?.label || item.type}</span>
                         {item.company_id && (
-                            <span className="text-muted-foreground">→ {companies?.find(c => c.id === item.company_id)?.name || 'Empresa'}</span>
+                          <span className="text-muted-foreground">→ {companies?.find((c: any) => c.id === item.company_id)?.name || 'Empresa'}</span>
                         )}
                       </div>
                       {item.negotiation_status && (
