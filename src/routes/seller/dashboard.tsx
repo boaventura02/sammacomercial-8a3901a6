@@ -290,7 +290,7 @@ function MyCityPage() {
       case 'won_by_seller':
         return <Badge variant="outline" className="bg-primary/15 text-primary border-primary/30">Conquistada por mim</Badge>;
       default:
-        return <Badge variant="muted" className="bg-muted text-muted-foreground">Não atendida</Badge>;
+        return <Badge variant="outline" className="bg-muted text-muted-foreground border-transparent">Não atendida</Badge>;
     }
   };
 
