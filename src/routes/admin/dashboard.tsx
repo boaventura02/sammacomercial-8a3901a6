@@ -18,7 +18,7 @@ function AdminDashboard() {
     <div className="space-y-8">
       <div>
         <h1 className="text-3xl font-bold tracking-tight">Visão Geral</h1>
-        <p className="text-muted-foreground">Bem-vindo, Júlio. Veja o desempenho da equipe.</p>
+        <p className="text-muted-foreground">Bem-vindo. Veja o desempenho da equipe.</p>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
