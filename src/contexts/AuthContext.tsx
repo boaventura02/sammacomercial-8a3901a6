@@ -59,13 +59,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       if (error) throw error;
       
-      // Type casting safely
       const castedProfile: Profile = {
         id: data.id,
         name: data.name,
         role: data.role as UserRole,
-        city_id: data.city_id,
-        avatar_url: data.avatar_url,
+        city_id: data.city_id ?? undefined,
+        avatar_url: data.avatar_url ?? undefined,
       };
       
       setProfile(castedProfile);
