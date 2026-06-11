@@ -96,6 +96,7 @@ export type Database = {
           outsourced_services: string[] | null
           responsible_contact: string
           responsible_name: string
+          samma_status: string
           seller_id: string
           service_type: string | null
           updated_at: string
@@ -113,6 +114,7 @@ export type Database = {
           outsourced_services?: string[] | null
           responsible_contact: string
           responsible_name: string
+          samma_status?: string
           seller_id: string
           service_type?: string | null
           updated_at?: string
@@ -130,6 +132,7 @@ export type Database = {
           outsourced_services?: string[] | null
           responsible_contact?: string
           responsible_name?: string
+          samma_status?: string
           seller_id?: string
           service_type?: string | null
           updated_at?: string
