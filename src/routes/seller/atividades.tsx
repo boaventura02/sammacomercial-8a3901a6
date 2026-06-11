@@ -227,7 +227,7 @@ function ActivityPage() {
   const expiringCompanies = useMemo(() => {
     if (!companies) return [];
     const limitDate = addDays(new Date(), 60);
-    return companies.filter(c => isBefore(parseISO(c.contract_end_date), limitDate));
+    return (companies as any[]).filter(c => isBefore(parseISO(c.contract_end_date), limitDate));
   }, [companies]);
 
   return (
