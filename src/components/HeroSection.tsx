@@ -26,7 +26,7 @@ export function HeroSection() {
             className="text-[clamp(3.5rem,10vw,7.5rem)] font-bold leading-[0.9] tracking-[-0.04em] text-white mb-6 uppercase opacity-0 animate-fade-up"
             style={{ animationDelay: "0.2s" }}
           >
-            SENTINEL <span className="text-[#2df42d]">AI</span>
+            SAMMA <span className="text-primary">AI</span>
           </h1>
 
           <p
@@ -51,7 +51,7 @@ export function HeroSection() {
           >
             <button 
               onClick={() => window.location.href = '/login'}
-              className="pointer-events-auto bg-[#2df42d] text-black px-10 py-5 text-sm font-bold uppercase tracking-widest rounded-sm cursor-pointer hover:bg-[#25cc25] transition-all active:scale-[0.97]"
+              className="pointer-events-auto bg-primary text-primary-foreground px-10 py-5 text-sm font-bold uppercase tracking-widest rounded-sm cursor-pointer hover:bg-primary/90 transition-all active:scale-[0.97]"
             >
               Acessar SAMMA
             </button>
