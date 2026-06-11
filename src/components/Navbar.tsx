@@ -5,17 +5,17 @@ const navLinks = ["Services", "About Us", "Projects", "Team", "Contacts"];
 
 export function Navbar() {
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 flex justify-between items-center px-8 lg:px-16 py-8 bg-transparent">
-      <div className="text-white text-2xl font-bold tracking-tighter uppercase italic">
-        Sentinel<span className="text-[#2df42d]">.</span>
+    <nav className="fixed top-0 left-0 right-0 z-50 flex justify-between items-center px-8 lg:px-16 py-5 bg-transparent">
+      <div className="text-foreground text-xl font-semibold tracking-tight">
+        SENTINEL
       </div>
 
-      <div className="hidden md:flex gap-10">
+      <div className="hidden md:flex gap-8">
         {navLinks.map((link) => (
           <a
             key={link}
             href={`#${link.toLowerCase().replace(/\s+/g, "-")}`}
-            className="text-[11px] font-bold text-gray-400 hover:text-white transition-colors uppercase tracking-[0.25em]"
+            className="text-sm text-muted-foreground hover:text-foreground transition-colors uppercase tracking-widest"
           >
             {link}
           </a>
@@ -24,7 +24,8 @@ export function Navbar() {
 
       <Button
         variant="navCta"
-        className="hidden md:inline-flex rounded-none uppercase text-[10px] font-bold tracking-[0.2em] px-8 py-6 bg-white text-black hover:bg-[#2df42d] hover:text-black transition-all border-none"
+        size="lg"
+        className="hidden md:inline-flex rounded-lg uppercase text-xs tracking-widest px-6"
       >
         Get Quote
       </Button>
