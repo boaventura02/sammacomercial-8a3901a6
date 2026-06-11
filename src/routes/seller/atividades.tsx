@@ -549,7 +549,7 @@ function ActivityPage() {
                                             </Badge>
                                         </div>
                                         {['visit', 'call', 'negotiation'].includes(type) && (
-                                            <p className="text-sm ml-2">→ Empresa: {companies?.find(c => c.id === formValues[`${type}_company_id`])?.name}</p>
+                                            <p className="text-sm ml-2">→ Empresa: {companies?.find((c: any) => c.id === formValues[`${type}_company_id`])?.name}</p>
                                         )}
                                         {type === 'negotiation' && (
                                             <p className="text-sm ml-2">→ Status: {formValues.negotiation_status}</p>
