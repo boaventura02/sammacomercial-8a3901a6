@@ -192,6 +192,7 @@ function MyCityPage() {
         contract_end_date: company.contract_end_date,
         responsible_name: company.responsible_name,
         responsible_contact: company.responsible_contact,
+        samma_status: company.samma_status || 'not_served',
       });
     } else {
       setEditingCompany(null);
@@ -202,6 +203,7 @@ function MyCityPage() {
         contract_end_date: "",
         responsible_name: "",
         responsible_contact: "",
+        samma_status: 'not_served',
       });
     }
     setIsDrawerOpen(true);
