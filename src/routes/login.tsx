@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Label } from '@/components/ui/label';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, User, Mail, Lock, ArrowRight, ShieldCheck } from 'lucide-react';
+import { Loader2, User, Mail, Lock, ArrowRight, ShieldCheck, Eye, EyeOff } from 'lucide-react';
 
 export const Route = createFileRoute('/login')({
   component: Login,
@@ -16,6 +16,8 @@ function Login() {
   const [isSignUp, setIsSignUp] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [fullName, setFullName] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
@@ -26,6 +28,15 @@ function Login() {
     setLoading(true);
     try {
       if (isSignUp) {
+        if (password !== confirmPassword) {
+          toast({
+            title: 'Erro no cadastro',
+            description: 'As senhas não coincidem.',
+            variant: 'destructive',
+          });
+          setLoading(false);
+          return;
+        }
         const { error } = await supabase.auth.signUp({
           email,
           password,
@@ -145,15 +156,42 @@ function Login() {
                   <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground transition-colors group-focus-within:text-primary" />
                   <Input
                     id="password"
-                    type="password"
+                    type={showPassword ? "text" : "password"}
                     placeholder="••••••••"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
-                    className="bg-background/50 border-border/50 focus:border-primary/50 focus:ring-primary/20 h-12 pl-10 transition-all"
+                    className="bg-background/50 border-border/50 focus:border-primary/50 focus:ring-primary/20 h-12 pl-10 pr-10 transition-all"
                   />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-primary transition-colors"
+                  >
+                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
                 </div>
               </div>
+
+              {isSignUp && (
+                <div className="space-y-2 animate-fade-in">
+                  <Label htmlFor="confirmPassword" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground ml-1">
+                    Confirmar Senha
+                  </Label>
+                  <div className="relative group">
+                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground transition-colors group-focus-within:text-primary" />
+                    <Input
+                      id="confirmPassword"
+                      type={showPassword ? "text" : "password"}
+                      placeholder="••••••••"
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      required
+                      className="bg-background/50 border-border/50 focus:border-primary/50 focus:ring-primary/20 h-12 pl-10 pr-10 transition-all"
+                    />
+                  </div>
+                </div>
+              )}
             </div>
 
             <Button
