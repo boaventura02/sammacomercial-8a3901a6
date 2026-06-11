@@ -390,7 +390,7 @@ function ActivityPage() {
                           onChange={(e) => setFormValues({...formValues, [`${type}_company_id`]: e.target.value})}
                         >
                           <option value="">Selecione uma empresa</option>
-                          {companies?.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                          {companies?.map((c: any) => <option key={c.id} value={c.id}>{c.name}</option>)}
                         </select>
                       </div>
                     )}
