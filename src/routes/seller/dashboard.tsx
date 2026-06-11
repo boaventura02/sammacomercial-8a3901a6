@@ -13,7 +13,15 @@ import {
   User, 
   Phone,
   AlertCircle,
-  Loader2
+  Loader2,
+  CheckCircle2,
+  Trophy,
+  Hourglass,
+  ChevronDown,
+  ChevronUp,
+  AlertTriangle,
+  ExternalLink,
+  Target
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { 
@@ -28,13 +36,25 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
-import { useState } from 'react';
+import { useState, useMemo, useRef, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { format, parseISO, differenceInDays, isBefore } from 'date-fns';
+import { format, parseISO, differenceInDays, isBefore, addDays } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
+import { Progress } from '@/components/ui/progress';
+import { 
+  Collapsible, 
+  CollapsibleContent, 
+  CollapsibleTrigger 
+} from '@/components/ui/collapsible';
+import { 
+  Tabs, 
+  TabsList, 
+  TabsTrigger 
+} from '@/components/ui/tabs';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 
 const companySchema = z.object({
   name: z.string().min(2, "O nome deve ter pelo menos 2 caracteres"),
