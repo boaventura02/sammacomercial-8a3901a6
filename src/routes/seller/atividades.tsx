@@ -119,7 +119,7 @@ function ActivityPage() {
           activity_date: new Date().toISOString().split('T')[0],
           general_notes: generalNotes,
           photo_url: photo,
-          activity_types: selectedTypes,
+          activity_types: selectedTypes as string[],
           description: "Atividade registrada via assistente"
         }])
         .select()
