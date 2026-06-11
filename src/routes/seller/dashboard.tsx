@@ -247,6 +247,73 @@ function MyCityPage() {
     return <Badge variant="secondary" className="bg-green-600 text-white">No prazo</Badge>;
   };
 
+  const stats = useMemo(() => {
+    if (!companies) return { total: 0, served: 0, won: 0, notServed: 0, percentage: 0 };
+    const total = companies.length;
+    const served = companies.filter(c => ['already_client', 'won_by_seller'].includes(c.samma_status)).length;
+    const won = companies.filter(c => c.samma_status === 'won_by_seller').length;
+    const notServed = companies.filter(c => c.samma_status === 'not_served').length;
+    const percentage = total > 0 ? Number(((served / total) * 100).toFixed(1)) : 0;
+    return { total, served, won, notServed, percentage };
+  }, [companies]);
+
+  const expiringContracts = useMemo(() => {
+    if (!companies) return [];
+    const limitDate = addDays(new Date(), 60);
+    return companies
+      .filter(c => isBefore(parseISO(c.contract_end_date), limitDate))
+      .sort((a, b) => new Date(a.contract_end_date).getTime() - new Date(b.contract_end_date).getTime());
+  }, [companies]);
+
+  const filteredCompanies = useMemo(() => {
+    if (!sortedCompanies) return [];
+    if (activeTab === 'all') return sortedCompanies;
+    if (activeTab === 'served') return sortedCompanies.filter(c => ['already_client', 'won_by_seller'].includes(c.samma_status));
+    if (activeTab === 'won') return sortedCompanies.filter(c => c.samma_status === 'won_by_seller');
+    if (activeTab === 'not_served') return sortedCompanies.filter(c => c.samma_status === 'not_served');
+    return sortedCompanies;
+  }, [sortedCompanies, activeTab]);
+
+  const scrollToCompany = (id: string) => {
+    const element = gridRefs.current[id];
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      setHighlightedId(id);
+      setTimeout(() => setHighlightedId(null), 2000);
+    }
+  };
+
+  const getSammaStatusBadge = (status: string) => {
+    switch (status) {
+      case 'already_client':
+        return <Badge variant="secondary" className="bg-secondary text-secondary-foreground">Já era cliente</Badge>;
+      case 'won_by_seller':
+        return <Badge variant="outline" className="bg-primary/15 text-primary border-primary/30">Conquistada por mim</Badge>;
+      default:
+        return <Badge variant="muted" className="bg-muted text-muted-foreground">Não atendida</Badge>;
+    }
+  };
+
+  const getUrgencyInfo = (dateStr: string) => {
+    const date = parseISO(dateStr);
+    const today = new Date();
+    const days = differenceInDays(date, today);
+
+    if (isBefore(date, today)) {
+      return { label: "Vencido", color: "destructive", class: "bg-red-600", days };
+    }
+    if (days <= 15) {
+      return { label: "Crítico", color: "destructive", class: "bg-red-500", days };
+    }
+    if (days <= 30) {
+      return { label: "Atenção", color: "warning", class: "bg-yellow-500 text-white", days };
+    }
+    if (days <= 60) {
+      return { label: "Acompanhar", color: "secondary", class: "bg-muted text-muted-foreground", days };
+    }
+    return { label: "No prazo", color: "secondary", class: "bg-green-600 text-white", days };
+  };
+
   if (loadingCompanies) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[400px]">
@@ -257,83 +324,227 @@ function MyCityPage() {
   }
 
   return (
-    <div className="space-y-8 max-w-7xl mx-auto pb-24">
+    <div className="space-y-10 max-w-7xl mx-auto pb-24 px-4 sm:px-6">
       <div className="flex flex-col gap-2">
         <h1 className="text-3xl font-bold tracking-tight">Minha Cidade</h1>
         <p className="text-muted-foreground">Gerencie as empresas e contratos na sua região.</p>
       </div>
 
-      {!companies || companies.length === 0 ? (
-        <div className="flex flex-col items-center justify-center min-h-[400px] text-center p-8 bg-card/40 rounded-xl border border-dashed border-border/50">
-          <Building2 className="w-16 h-16 text-muted-foreground mb-4 opacity-20" />
-          <h2 className="text-xl font-semibold">Nenhuma empresa cadastrada ainda.</h2>
-          <p className="text-muted-foreground mb-6">Comece cadastrando sua primeira empresa na região.</p>
-          <Button onClick={() => handleOpenDrawer()} className="bg-green-600 hover:bg-green-700">
-            Cadastrar primeira empresa
-          </Button>
-        </div>
-      ) : (
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {companies.map((company) => (
-            <Card key={company.id} className="bg-card/40 backdrop-blur-md border-border/50 flex flex-col group hover:shadow-lg transition-all duration-300">
-              <CardHeader className="flex flex-row items-start justify-between pb-2">
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2">
-                    <Building2 className="w-4 h-4 text-primary" />
-                    <CardTitle className="text-lg font-bold">{company.name}</CardTitle>
-                  </div>
-                </div>
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
-                  onClick={() => handleOpenDrawer(company)}
-                  className="hover:bg-primary/10 hover:text-primary transition-colors"
-                >
-                  <Edit2 className="w-4 h-4" />
-                </Button>
+      {/* SECTION 1 — STATS OVERVIEW */}
+      <div className="space-y-6">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          {[
+            { label: "Total de Empresas", value: stats.total, icon: Building2, color: "text-blue-500", delay: 0 },
+            { label: "Atendidas pela SAMMA", value: stats.served, icon: CheckCircle2, color: "text-green-500", delay: 0.1 },
+            { label: "Conquistadas por mim", value: stats.won, icon: Trophy, color: "text-yellow-500", delay: 0.2 },
+            { label: "Ainda não atendidas", value: stats.notServed, icon: Hourglass, color: "text-gray-400", delay: 0.3 }
+          ].map((stat, i) => (
+            <Card key={i} className="bg-card/40 backdrop-blur-md border-border/50 animate-fade-up" style={{ animationDelay: `${stat.delay}s` }}>
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardTitle className="text-xs font-bold text-muted-foreground uppercase tracking-wider">{stat.label}</CardTitle>
+                <stat.icon className={cn("w-4 h-4", stat.color)} />
               </CardHeader>
-              <CardContent className="space-y-4 flex-1">
-                <div className="flex items-center gap-2">
-                  <span className="text-xs text-muted-foreground uppercase font-bold tracking-wider">Terceiriza serviço:</span>
-                  <Badge variant={company.has_outsourced ? "default" : "outline"} className={cn(company.has_outsourced ? "bg-primary" : "")}>
-                    {company.has_outsourced ? "Sim" : "Não"}
-                  </Badge>
-                </div>
-
-                {company.has_outsourced && company.outsourced_services && (company.outsourced_services as string[]).length > 0 && (
-                  <div className="flex flex-wrap gap-1">
-                    {(company.outsourced_services as string[]).map((service: string) => (
-                      <Badge key={service} variant="secondary" className="text-[10px] py-0">
-                        {service}
-                      </Badge>
-                    ))}
-                  </div>
-                )}
-
-                <div className="pt-2 border-t border-border/10 space-y-2">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <Calendar className="w-4 h-4" />
-                      <span>{format(parseISO(company.contract_end_date), 'dd/MM/yyyy')}</span>
-                    </div>
-                    {getUrgencyBadge(company.contract_end_date)}
-                  </div>
-
-                  <div className="flex items-center gap-2 text-sm">
-                    <User className="w-4 h-4 text-muted-foreground" />
-                    <span className="font-medium">{company.responsible_name}</span>
-                  </div>
-                  
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <Phone className="w-4 h-4" />
-                    <span>{company.responsible_contact}</span>
-                  </div>
-                </div>
+              <CardContent>
+                <div className="text-2xl font-bold">{stat.value}</div>
               </CardContent>
             </Card>
           ))}
         </div>
-      )}
+
+        <div className="space-y-2">
+          {stats.total > 0 ? (
+            <>
+              <div className="flex justify-between items-center text-sm font-medium">
+                <span className="text-muted-foreground">{stats.percentage}% das empresas já são atendidas pela SAMMA</span>
+              </div>
+              <Progress 
+                value={stats.percentage} 
+                className={cn(
+                  "h-2",
+                  stats.percentage >= 70 ? "[&>div]:bg-green-600" : 
+                  stats.percentage >= 40 ? "[&>div]:bg-yellow-500" : 
+                  "[&>div]:bg-red-600"
+                )} 
+              />
+            </>
+          ) : (
+            <p className="text-sm text-muted-foreground italic">Nenhuma empresa cadastrada ainda.</p>
+          )}
+        </div>
+      </div>
+
+      {/* SECTION 2 — ALERTA DE CONTRATOS A VENCER */}
+      <Card className={cn(
+        "bg-card/40 backdrop-blur-md border-border/50 transition-all duration-300",
+        expiringContracts.length > 0 ? "border-yellow-500/30" : ""
+      )}>
+        <Collapsible open={isAlertsExpanded} onOpenChange={setIsAlertsExpanded}>
+          <CollapsibleTrigger asChild>
+            <Button variant="ghost" className="w-full flex items-center justify-between p-6 hover:bg-transparent">
+              <div className="flex items-center gap-2">
+                <AlertTriangle className={cn("w-5 h-5", expiringContracts.length > 0 ? "text-yellow-500" : "text-green-500")} />
+                <span className="text-lg font-bold">
+                  {expiringContracts.length > 0 
+                    ? `⚠️ Contratos próximos do vencimento (${expiringContracts.length})`
+                    : "✅ Contratos em dia"}
+                </span>
+              </div>
+              {isAlertsExpanded ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
+            </Button>
+          </CollapsibleTrigger>
+          <CollapsibleContent className="px-6 pb-6 space-y-4">
+            {expiringContracts.length > 0 ? (
+              <div className="space-y-3">
+                {expiringContracts.map((company) => {
+                  const urgency = getUrgencyInfo(company.contract_end_date);
+                  return (
+                    <div key={company.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-xl bg-background/40 border border-border/50 gap-4 group hover:border-primary/30 transition-all">
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2">
+                          <Building2 className="w-4 h-4 text-primary" />
+                          <span className="font-bold">{company.name}</span>
+                          <Badge variant={urgency.color as any} className={cn("text-[10px] py-0", urgency.class)}>
+                            {urgency.label}
+                          </Badge>
+                        </div>
+                        <div className="text-sm text-muted-foreground flex flex-wrap gap-x-3 gap-y-1">
+                          <span className="flex items-center gap-1">
+                            <Calendar className="w-3.5 h-3.5" />
+                            Vence em: {format(parseISO(company.contract_end_date), 'dd/MM/yyyy')}
+                          </span>
+                          <span className="font-medium text-primary">
+                            · Faltam {urgency.days} dias
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-2 mt-1">
+                          <span className="text-xs text-muted-foreground">Situação:</span>
+                          {getSammaStatusBadge(company.samma_status)}
+                        </div>
+                      </div>
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        className="text-primary hover:text-primary hover:bg-primary/10 font-bold group"
+                        onClick={() => scrollToCompany(company.id)}
+                      >
+                        Ver empresa <ExternalLink className="w-3 h-3 ml-2 group-hover:translate-x-1 transition-transform" />
+                      </Button>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <p className="text-muted-foreground text-center py-4 italic">
+                ✅ Nenhum contrato próximo do vencimento. Tudo certo por aqui!
+              </p>
+            )}
+          </CollapsibleContent>
+        </Collapsible>
+      </Card>
+
+      {/* SECTION 3 — COMPANY GRID WITH FILTERS */}
+      <div className="space-y-6">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <TabsList className="w-full justify-start overflow-x-auto h-auto p-1 bg-background/50 border border-border/50 no-scrollbar">
+            <TabsTrigger value="all" className="rounded-md font-bold text-xs uppercase tracking-wider py-2">
+              Todas ({stats.total})
+            </TabsTrigger>
+            <TabsTrigger value="served" className="rounded-md font-bold text-xs uppercase tracking-wider py-2">
+              ✅ Atendidas ({stats.served})
+            </TabsTrigger>
+            <TabsTrigger value="won" className="rounded-md font-bold text-xs uppercase tracking-wider py-2">
+              🏆 Conquistadas ({stats.won})
+            </TabsTrigger>
+            <TabsTrigger value="not_served" className="rounded-md font-bold text-xs uppercase tracking-wider py-2">
+              ⏳ Não atendidas ({stats.notServed})
+            </TabsTrigger>
+          </TabsList>
+        </Tabs>
+
+        {filteredCompanies.length === 0 ? (
+          <div className="flex flex-col items-center justify-center min-h-[300px] text-center p-8 bg-card/40 rounded-xl border border-dashed border-border/50">
+            <Building2 className="w-16 h-16 text-muted-foreground mb-4 opacity-20" />
+            <h2 className="text-xl font-semibold">Nenhuma empresa encontrada nesta categoria.</h2>
+            <p className="text-muted-foreground">Tente mudar o filtro ou cadastrar novas empresas.</p>
+          </div>
+        ) : (
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {filteredCompanies.map((company) => {
+              const urgency = getUrgencyInfo(company.contract_end_date);
+              return (
+                <Card 
+                  key={company.id} 
+                  ref={el => gridRefs.current[company.id] = el}
+                  className={cn(
+                    "bg-card/40 backdrop-blur-md border-border/50 flex flex-col group hover:shadow-lg transition-all duration-300",
+                    highlightedId === company.id ? "ring-2 ring-primary animate-pulse border-primary" : ""
+                  )}
+                >
+                  <CardHeader className="flex flex-row items-start justify-between pb-2">
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <Building2 className="w-4 h-4 text-primary" />
+                        <CardTitle className="text-lg font-bold">{company.name}</CardTitle>
+                      </div>
+                      <div className="flex flex-wrap gap-2 pt-1">
+                        {getSammaStatusBadge(company.samma_status)}
+                        <Badge variant={urgency.color as any} className={cn("text-[10px] py-0", urgency.class)}>
+                          {urgency.label}
+                        </Badge>
+                      </div>
+                    </div>
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      onClick={() => handleOpenDrawer(company)}
+                      className="hover:bg-primary/10 hover:text-primary transition-colors"
+                    >
+                      <Edit2 className="w-4 h-4" />
+                    </Button>
+                  </CardHeader>
+                  <CardContent className="space-y-4 flex-1">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-muted-foreground uppercase font-bold tracking-wider">Terceiriza serviço:</span>
+                      <Badge variant={company.has_outsourced ? "default" : "outline"} className={cn(company.has_outsourced ? "bg-primary" : "")}>
+                        {company.has_outsourced ? "Sim" : "Não"}
+                      </Badge>
+                    </div>
+
+                    {company.has_outsourced && company.outsourced_services && (company.outsourced_services as string[]).length > 0 && (
+                      <div className="flex flex-wrap gap-1">
+                        {(company.outsourced_services as string[]).map((service: string) => (
+                          <Badge key={service} variant="secondary" className="text-[10px] py-0">
+                            {service}
+                          </Badge>
+                        ))}
+                      </div>
+                    )}
+
+                    <div className="pt-2 border-t border-border/10 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                          <Calendar className="w-4 h-4" />
+                          <span>{format(parseISO(company.contract_end_date), 'dd/MM/yyyy')}</span>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-2 text-sm">
+                        <User className="w-4 h-4 text-muted-foreground" />
+                        <span className="font-medium">{company.responsible_name}</span>
+                      </div>
+                      
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <Phone className="w-4 h-4" />
+                        <span>{company.responsible_contact}</span>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
+        )}
+      </div>
 
       {/* Floating Action Button */}
       <Button 
