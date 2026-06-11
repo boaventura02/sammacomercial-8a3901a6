@@ -42,7 +42,7 @@ function Login() {
           password,
           options: {
             data: {
-              full_name: fullName,
+              name: fullName,
               role: 'seller', // Default role
             },
           },
