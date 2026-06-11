@@ -21,7 +21,8 @@ interface SidebarProps {
 }
 
 export function Sidebar({ role, name }: SidebarProps) {
-  const [collapsed, setCollapsed] = useState(false);
+  const [collapsed, setCollapsed] = useState(true);
+  const [isHovered, setIsHovered] = useState(false);
   const router = useRouter();
   const { signOut } = useAuth();
   const currentPath = router.state.location.pathname;
@@ -45,16 +46,24 @@ export function Sidebar({ role, name }: SidebarProps) {
 
   return (
     <>
+      {/* Interaction zone to trigger sidebar */}
+      <div 
+        className="hidden md:block fixed left-0 top-0 bottom-0 w-4 z-40 transition-all"
+        onMouseEnter={() => setIsHovered(true)}
+      />
+
       {/* Desktop Sidebar */}
       <aside 
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
         className={cn(
-          "hidden md:flex flex-col bg-card border-r border-border transition-all duration-300 z-30",
-          collapsed ? "w-20" : "w-64"
+          "hidden md:flex flex-col bg-card border-r border-border transition-all duration-300 z-50 fixed left-0 top-0 bottom-0",
+          (!collapsed || isHovered) ? "w-64" : "w-0 border-none overflow-hidden"
         )}
       >
         <div className="p-6 flex items-center justify-between">
-          {!collapsed && (
-            <div className="font-bold text-2xl tracking-tighter">
+          {(!collapsed || isHovered) && (
+            <div className="font-bold text-2xl tracking-tighter animate-fade-in">
               SAMMA<span className="text-primary">.</span>
             </div>
           )}
@@ -83,19 +92,19 @@ export function Sidebar({ role, name }: SidebarProps) {
                 )}
               >
                 <link.icon size={20} className={cn(isActive ? "" : "group-hover:scale-110 transition-transform")} />
-                {!collapsed && <span className="font-medium">{link.label}</span>}
+                {(!collapsed || isHovered) && <span className="font-medium animate-fade-in">{link.label}</span>}
               </Link>
             );
           })}
         </nav>
 
         <div className="p-4 border-t border-border mt-auto">
-          <div className={cn("flex items-center gap-3", collapsed ? "justify-center" : "")}>
-            <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold border border-primary/30">
+          <div className={cn("flex items-center gap-3", (!collapsed || isHovered) ? "" : "justify-center")}>
+            <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold border border-primary/30 shrink-0">
               {name.charAt(0)}
             </div>
-            {!collapsed && (
-              <div className="flex-1 min-w-0">
+            {(!collapsed || isHovered) && (
+              <div className="flex-1 min-w-0 animate-fade-in">
                 <p className="text-sm font-semibold truncate">{name}</p>
                 <p className="text-xs text-muted-foreground capitalize">{role}</p>
               </div>
@@ -110,7 +119,7 @@ export function Sidebar({ role, name }: SidebarProps) {
             )}
           >
             <LogOut size={18} />
-            {!collapsed && <span>Sair</span>}
+            {(!collapsed || isHovered) && <span className="animate-fade-in">Sair</span>}
           </Button>
         </div>
       </aside>
