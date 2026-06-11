@@ -1,15 +1,17 @@
-import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
-import { useState, useEffect, Suspense, lazy } from "react";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
-import { useAuth } from "@/contexts/AuthContext";
-
-const Spline = lazy(() => import("@splinetool/react-spline"));
+import { useAuth, AuthProvider } from "@/contexts/AuthContext";
 
 export const Route = createFileRoute("/login")({
-  component: LoginPage,
+  component: () => (
+    <AuthProvider>
+      <LoginPage />
+    </AuthProvider>
+  ),
 });
 
 function LoginPage() {
@@ -18,13 +20,13 @@ function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
-  const { profile, loading: authLoading } = useAuth();
+  const { profile } = useAuth();
 
   useEffect(() => {
-    if (profile && !authLoading) {
+    if (profile) {
       navigate({ to: profile.role === "admin" ? "/admin/dashboard" : "/seller/dashboard" });
     }
-  }, [profile, authLoading, navigate]);
+  }, [profile, navigate]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -32,78 +34,31 @@ function LoginPage() {
     setError(null);
     const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
     if (signInError) {
-      setError("Credenciais inválidas");
+      setError(signInError.message);
       setLoading(false);
     }
   };
 
   return (
-    <div className="relative min-h-screen flex items-center justify-center bg-[#141414] overflow-hidden font-sora">
-      {/* Spline 3D Background */}
+    <div className="min-h-screen flex items-center justify-center bg-background relative overflow-hidden font-sora">
       <div className="absolute inset-0 z-0">
-        <Suspense fallback={<div className="absolute inset-0 bg-[#141414]" />}>
-          <Spline
-            scene="https://prod.spline.design/Slk6b8kz3LRlKiyk/scene.splinecode"
-            className="w-full h-full"
-          />
-        </Suspense>
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-primary/10 rounded-full blur-[120px] animate-pulse" />
       </div>
 
-      {/* Overlay */}
-      <div className="absolute inset-0 bg-black/60 z-[1] backdrop-blur-[2px]" />
-
-      <Card className="relative w-full max-w-md p-8 z-10 border-white/10 bg-black/40 backdrop-blur-xl animate-fade-up border-[0.5px]">
+      <Card className="w-full max-w-md p-8 z-10 border-border bg-card/80 backdrop-blur-sm animate-fade-up">
         <div className="flex flex-col items-center mb-8">
-          <Link to="/" className="text-3xl font-bold tracking-tighter text-white uppercase italic mb-2 hover:opacity-80 transition-opacity">
-            SAMMA<span className="text-[#2df42d]">.</span>
-          </Link>
-          <p className="text-gray-400 text-xs uppercase tracking-[0.2em] font-medium">
-            Gestão de Equipes de Vendas
-          </p>
+          <h1 className="text-4xl font-bold tracking-tighter text-primary">SAMMA</h1>
+          <p className="text-muted-foreground mt-2 text-sm">Gestão de Equipes de Vendas</p>
         </div>
 
-        <form onSubmit={handleLogin} className="space-y-6">
-          <div className="space-y-2">
-            <Input 
-              type="email" 
-              placeholder="E-MAIL CORPORATIVO" 
-              value={email} 
-              onChange={(e) => setEmail(e.target.value)} 
-              required 
-              className="bg-white/5 border-white/10 text-white placeholder:text-gray-500 rounded-none h-12 uppercase text-[10px] tracking-widest focus:border-[#2df42d]/50 focus:ring-0"
-            />
-          </div>
-          <div className="space-y-2">
-            <Input 
-              type="password" 
-              placeholder="SENHA" 
-              value={password} 
-              onChange={(e) => setPassword(e.target.value)} 
-              required 
-              className="bg-white/5 border-white/10 text-white placeholder:text-gray-500 rounded-none h-12 uppercase text-[10px] tracking-widest focus:border-[#2df42d]/50 focus:ring-0"
-            />
-          </div>
-          
-          {error && (
-            <div className="bg-destructive/10 border border-destructive/20 p-3">
-              <p className="text-destructive text-[10px] uppercase tracking-widest text-center font-bold">{error}</p>
-            </div>
-          )}
-
-          <Button 
-            type="submit" 
-            className="w-full bg-[#2df42d] text-black hover:bg-[#25cc25] rounded-none h-12 font-bold uppercase tracking-[0.2em] text-[11px] transition-all" 
-            disabled={loading}
-          >
-            {loading ? "PROCESSANDO..." : "ACESSAR SISTEMA"}
+        <form onSubmit={handleLogin} className="space-y-4">
+          <Input type="email" placeholder="E-mail" value={email} onChange={(e) => setEmail(e.target.value)} required />
+          <Input type="password" placeholder="Senha" value={password} onChange={(e) => setPassword(e.target.value)} required />
+          {error && <p className="text-destructive text-sm text-center">{error}</p>}
+          <Button type="submit" className="w-full" disabled={loading}>
+            {loading ? "Entrando..." : "Entrar"}
           </Button>
         </form>
-
-        <div className="mt-8 pt-6 border-t border-white/5 flex justify-center">
-          <p className="text-gray-600 text-[9px] uppercase tracking-[0.3em]">
-            Sentinel AI Infrastructure
-          </p>
-        </div>
       </Card>
     </div>
   );

@@ -49,14 +49,11 @@ export function HeroSection() {
             className="flex flex-wrap gap-4 opacity-0 animate-fade-up"
             style={{ animationDelay: "0.7s" }}
           >
-            <button 
-              onClick={() => window.location.href = '/login'}
-              className="pointer-events-auto bg-[#2df42d] text-black px-10 py-5 text-sm font-bold uppercase tracking-widest rounded-sm cursor-pointer hover:bg-[#25cc25] transition-all active:scale-[0.97]"
-            >
-              Acessar SAMMA
+            <button className="pointer-events-auto bg-[#2df42d] text-black px-10 py-5 text-sm font-bold uppercase tracking-widest rounded-sm cursor-pointer hover:bg-[#25cc25] transition-all active:scale-[0.97]">
+              Book a Call
             </button>
             <button className="pointer-events-auto bg-white text-black px-10 py-5 text-sm font-bold uppercase tracking-widest rounded-sm cursor-pointer hover:bg-gray-200 transition-all active:scale-[0.97]">
-              Nossas Soluções
+              Our Work
             </button>
           </div>
 

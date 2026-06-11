@@ -24,10 +24,9 @@ export function Navbar() {
 
       <Button
         variant="navCta"
-        onClick={() => window.location.href = '/login'}
         className="hidden md:inline-flex rounded-none uppercase text-[10px] font-bold tracking-[0.2em] px-8 py-6 bg-white text-black hover:bg-[#2df42d] hover:text-black transition-all border-none"
       >
-        Entrar
+        Get Quote
       </Button>
     </nav>
   );
