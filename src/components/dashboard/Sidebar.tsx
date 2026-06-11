@@ -8,10 +8,9 @@ import {
   Building2, 
   LogOut,
   ChevronLeft,
-  ChevronRight,
-  Bell
+  ChevronRight
 } from "lucide-react";
-import { Link, useLocation } from "@tanstack/react-router";
+import { Link, useRouter } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
@@ -23,8 +22,9 @@ interface SidebarProps {
 
 export function Sidebar({ role, name }: SidebarProps) {
   const [collapsed, setCollapsed] = useState(false);
-  const location = useLocation();
+  const router = useRouter();
   const { signOut } = useAuth();
+  const currentPath = router.state.location.pathname;
 
   const adminLinks = [
     { label: "Cidades", icon: Map, href: "/admin/cidades" },
@@ -70,11 +70,11 @@ export function Sidebar({ role, name }: SidebarProps) {
 
         <nav className="flex-1 px-3 space-y-1">
           {links.map((link) => {
-            const isActive = location.pathname === link.href;
+            const isActive = currentPath === link.href;
             return (
               <Link
                 key={link.href}
-                to={link.href}
+                to={link.href as any}
                 className={cn(
                   "flex items-center gap-3 px-3 py-3 rounded-lg transition-all group",
                   isActive 
@@ -118,11 +118,11 @@ export function Sidebar({ role, name }: SidebarProps) {
       {/* Mobile Bottom Navigation */}
       <nav className="md:hidden fixed bottom-0 left-0 right-0 h-16 bg-card border-t border-border flex items-center justify-around z-50 px-2 pb-safe">
         {links.slice(0, 4).map((link) => {
-          const isActive = location.pathname === link.href;
+          const isActive = currentPath === link.href;
           return (
             <Link
               key={link.href}
-              to={link.href}
+              to={link.href as any}
               className={cn(
                 "flex flex-col items-center gap-1 transition-all px-2 py-1 rounded-md",
                 isActive ? "text-primary scale-110" : "text-muted-foreground"
