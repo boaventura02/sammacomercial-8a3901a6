@@ -14,6 +14,7 @@ function Login() {
   const [isSignUp, setIsSignUp] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [fullName, setFullName] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -28,6 +29,7 @@ function Login() {
           password,
           options: {
             data: {
+              full_name: fullName,
               role: 'seller', // Default role
             },
           },
@@ -90,6 +92,18 @@ function Login() {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4 mt-6">
+            {isSignUp && (
+              <div className="space-y-2 animate-fade-in">
+                <Input
+                  type="text"
+                  placeholder="Nome Completo"
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
+                  required
+                  className="bg-input border-border focus:ring-primary h-12"
+                />
+              </div>
+            )}
             <div className="space-y-2">
               <Input
                 type="email"
