@@ -170,7 +170,7 @@ function ActivityPage() {
             await supabase.from('contacts').insert([{
                 company_id: companyId,
                 seller_id: profile.id,
-                contact_type: type,
+                contact_type: type as string,
                 contact_date: new Date().toISOString().split('T')[0]
             }]);
         }
