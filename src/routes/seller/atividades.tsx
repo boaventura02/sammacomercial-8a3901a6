@@ -263,7 +263,7 @@ function ActivityPage() {
                     {format(parseISO(activity.activity_date), 'dd/MM/yyyy')}
                   </div>
                   <div className="flex flex-wrap gap-1">
-                    {activity.activity_types?.map((type: string) => (
+                    {(activity.activity_types as string[])?.map((type: string) => (
                         <Badge key={type} variant="secondary" className="text-[10px] capitalize">
                             {type}
                         </Badge>
