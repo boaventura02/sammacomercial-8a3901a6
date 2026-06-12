@@ -96,6 +96,10 @@ function MyCityPage() {
   const [isAlertsExpanded, setIsAlertsExpanded] = useState(true);
   const [highlightedId, setHighlightedId] = useState<string | null>(null);
   const gridRefs = useRef<Record<string, HTMLDivElement | null>>({});
+  const [importOpen, setImportOpen] = useState(false);
+  const [importRows, setImportRows] = useState<{ name: string; address: string; cep: string; cidade: string }[]>([]);
+  const [importing, setImporting] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const { data: companies, isLoading: loadingCompanies } = useQuery({
     queryKey: ['seller-companies', profile?.id],
