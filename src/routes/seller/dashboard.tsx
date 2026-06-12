@@ -521,7 +521,7 @@ function MyCityPage() {
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2 text-sm text-muted-foreground">
                           <Calendar className="w-4 h-4" />
-                          <span>{format(parseISO(company.contract_end_date), 'dd/MM/yyyy')}</span>
+                          <span>{company.contract_end_date ? format(parseISO(company.contract_end_date), 'dd/MM/yyyy') : 'Sem data'}</span>
                         </div>
                       </div>
 
