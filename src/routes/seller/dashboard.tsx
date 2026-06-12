@@ -316,6 +316,82 @@ function MyCityPage() {
     return { label: "No prazo", color: "secondary", class: "bg-green-600 text-white", days };
   };
 
+  const normalizeKey = (k: string) =>
+    k.toString().trim().toLowerCase()
+      .normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+
+  const handleFileSelected = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      const buf = await file.arrayBuffer();
+      const wb = XLSX.read(buf, { type: 'array' });
+      const ws = wb.Sheets[wb.SheetNames[0]];
+      const json = XLSX.utils.sheet_to_json<Record<string, any>>(ws, { defval: '' });
+      const rows = json.map((r) => {
+        const map: Record<string, any> = {};
+        Object.keys(r).forEach((k) => { map[normalizeKey(k)] = r[k]; });
+        return {
+          name: String(map['unidade'] ?? map['nome'] ?? map['sede'] ?? '').trim(),
+          address: String(map['endereco'] ?? map['endereço'] ?? map['address'] ?? '').trim(),
+          cep: String(map['cep'] ?? '').trim(),
+          cidade: String(map['cidade'] ?? '').trim(),
+        };
+      }).filter((r) => r.name);
+      setImportRows(rows);
+      if (rows.length === 0) {
+        toast({ title: 'Nenhuma sede encontrada na planilha', description: 'Verifique se há a coluna "Unidade".', variant: 'destructive' });
+      }
+    } catch (err) {
+      console.error(err);
+      toast({ title: 'Erro ao ler a planilha', description: 'Verifique o formato do arquivo.', variant: 'destructive' });
+    } finally {
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
+
+  const handleConfirmImport = async () => {
+    if (!profile?.id || !profile?.city_id) {
+      toast({ title: 'Perfil incompleto', variant: 'destructive' });
+      return;
+    }
+    setImporting(true);
+    try {
+      const payload = importRows.map((r) => ({
+        seller_id: profile.id,
+        city_id: profile.city_id!,
+        name: r.name,
+        address: r.address || null,
+        cep: r.cep || null,
+        has_outsourced: false,
+        outsourced_services: [],
+        is_samma_client: false,
+        won_by_seller: false,
+        samma_status: 'novo',
+      }));
+      const { error } = await supabase.from('companies').insert(payload);
+      if (error) throw error;
+      toast({ title: `${payload.length} sede(s) importada(s) com sucesso! ✅` });
+      queryClient.invalidateQueries({ queryKey: ['seller-companies'] });
+      setImportOpen(false);
+      setImportRows([]);
+    } catch (err: any) {
+      console.error(err);
+      toast({ title: 'Erro na importação', description: err.message ?? 'Tente novamente.', variant: 'destructive' });
+    } finally {
+      setImporting(false);
+    }
+  };
+
+  const downloadTemplate = () => {
+    const ws = XLSX.utils.json_to_sheet([
+      { Unidade: 'Ex: Sede Central', 'ENDEREÇO': 'Av. Exemplo, 123 - Centro', CEP: '74000-000', Cidade: 'Goiânia' },
+    ]);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Sedes');
+    XLSX.writeFile(wb, 'modelo-sedes.xlsx');
+  };
+
   if (loadingCompanies) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[400px]">
