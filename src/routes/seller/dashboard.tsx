@@ -111,7 +111,9 @@ function MyCityPage() {
   const sortedCompanies = useMemo(() => {
     if (!companies) return [];
     return [...companies].sort((a, b) => {
-      return new Date(a.contract_end_date).getTime() - new Date(b.contract_end_date).getTime();
+      const ta = a.contract_end_date ? new Date(a.contract_end_date).getTime() : Infinity;
+      const tb = b.contract_end_date ? new Date(b.contract_end_date).getTime() : Infinity;
+      return ta - tb;
     });
   }, [companies]);
 
