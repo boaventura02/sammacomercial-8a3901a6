@@ -85,8 +85,10 @@ export type Database = {
       }
       companies: {
         Row: {
+          address: string | null
+          cep: string | null
           city_id: string
-          contract_end_date: string
+          contract_end_date: string | null
           created_at: string
           has_outsourced: boolean | null
           id: string
@@ -94,8 +96,8 @@ export type Database = {
           name: string
           notes: string | null
           outsourced_services: string[] | null
-          responsible_contact: string
-          responsible_name: string
+          responsible_contact: string | null
+          responsible_name: string | null
           samma_status: string
           seller_id: string
           service_type: string | null
@@ -104,8 +106,10 @@ export type Database = {
           workforce_count: number | null
         }
         Insert: {
+          address?: string | null
+          cep?: string | null
           city_id: string
-          contract_end_date: string
+          contract_end_date?: string | null
           created_at?: string
           has_outsourced?: boolean | null
           id?: string
@@ -113,8 +117,8 @@ export type Database = {
           name: string
           notes?: string | null
           outsourced_services?: string[] | null
-          responsible_contact: string
-          responsible_name: string
+          responsible_contact?: string | null
+          responsible_name?: string | null
           samma_status?: string
           seller_id: string
           service_type?: string | null
@@ -123,8 +127,10 @@ export type Database = {
           workforce_count?: number | null
         }
         Update: {
+          address?: string | null
+          cep?: string | null
           city_id?: string
-          contract_end_date?: string
+          contract_end_date?: string | null
           created_at?: string
           has_outsourced?: boolean | null
           id?: string
@@ -132,8 +138,8 @@ export type Database = {
           name?: string
           notes?: string | null
           outsourced_services?: string[] | null
-          responsible_contact?: string
-          responsible_name?: string
+          responsible_contact?: string | null
+          responsible_name?: string | null
           samma_status?: string
           seller_id?: string
           service_type?: string | null
