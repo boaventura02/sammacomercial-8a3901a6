@@ -403,9 +403,19 @@ function MyCityPage() {
 
   return (
     <div className="space-y-10 max-w-7xl mx-auto pb-24 px-4 sm:px-6">
-      <div className="flex flex-col gap-2">
-        <h1 className="text-3xl font-bold tracking-tight">Minha Cidade</h1>
-        <p className="text-muted-foreground">Gerencie as empresas e contratos na sua região.</p>
+      <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+        <div className="flex flex-col gap-2">
+          <h1 className="text-3xl font-bold tracking-tight">Minha Cidade</h1>
+          <p className="text-muted-foreground">Gerencie as empresas e contratos na sua região.</p>
+        </div>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={downloadTemplate} className="gap-2">
+            <Download className="w-4 h-4" /> Modelo
+          </Button>
+          <Button variant="secondary" onClick={() => setImportOpen(true)} className="gap-2">
+            <Upload className="w-4 h-4" /> Importar planilha
+          </Button>
+        </div>
       </div>
 
       {/* SECTION 1 — STATS OVERVIEW */}
