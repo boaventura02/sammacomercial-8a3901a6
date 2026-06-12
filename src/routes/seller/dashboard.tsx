@@ -63,7 +63,8 @@ const companySchema = z.object({
   contract_end_date: z.string().min(1, "Data de vencimento é obrigatória"),
   responsible_name: z.string().min(2, "Nome do responsável deve ter pelo menos 2 caracteres"),
   responsible_contact: z.string().min(1, "Contato é obrigatório"),
-  samma_status: z.enum(['already_client', 'won_by_seller', 'not_served']),
+  is_samma_client: z.boolean().default(false),
+  won_by_seller: z.boolean().optional(),
 }).refine((data) => {
   if (data.has_outsourced && data.outsourced_services.length === 0) {
     return false;
@@ -126,13 +127,15 @@ function MyCityPage() {
     defaultValues: {
       has_outsourced: false,
       outsourced_services: [],
-      samma_status: 'not_served',
+      is_samma_client: false,
+      won_by_seller: false,
     }
   });
 
   const hasOutsourced = watch("has_outsourced");
   const outsourcedServices = watch("outsourced_services") || [];
   const contractEndDate = watch("contract_end_date");
+  const isSammaClient = watch("is_samma_client");
 
   const upsertMutation = useMutation({
     mutationFn: async (values: CompanyFormValues) => {
@@ -147,7 +150,8 @@ function MyCityPage() {
         contract_end_date: values.contract_end_date,
         responsible_name: values.responsible_name,
         responsible_contact: values.responsible_contact,
-        samma_status: values.samma_status,
+        is_samma_client: values.is_samma_client,
+        won_by_seller: values.is_samma_client ? values.won_by_seller : false,
         seller_id: profile.id,
         city_id: profile.city_id,
         updated_at: new Date().toISOString(),
@@ -193,7 +197,8 @@ function MyCityPage() {
         contract_end_date: company.contract_end_date,
         responsible_name: company.responsible_name,
         responsible_contact: company.responsible_contact,
-        samma_status: company.samma_status || 'not_served',
+        is_samma_client: !!company.is_samma_client,
+        won_by_seller: !!company.won_by_seller,
       });
     } else {
       setEditingCompany(null);
@@ -204,7 +209,8 @@ function MyCityPage() {
         contract_end_date: "",
         responsible_name: "",
         responsible_contact: "",
-        samma_status: 'not_served',
+        is_samma_client: false,
+        won_by_seller: false,
       });
     }
     setIsDrawerOpen(true);
@@ -234,9 +240,9 @@ function MyCityPage() {
   const stats = useMemo(() => {
     if (!companies) return { total: 0, served: 0, won: 0, notServed: 0, percentage: 0 };
     const total = companies.length;
-    const served = companies.filter(c => ['already_client', 'won_by_seller'].includes(c.samma_status)).length;
-    const won = companies.filter(c => c.samma_status === 'won_by_seller').length;
-    const notServed = companies.filter(c => c.samma_status === 'not_served').length;
+    const served = companies.filter(c => c.is_samma_client).length;
+    const won = companies.filter(c => c.is_samma_client && c.won_by_seller).length;
+    const notServed = companies.filter(c => !c.is_samma_client).length;
     const percentage = total > 0 ? Number(((served / total) * 100).toFixed(1)) : 0;
     return { total, served, won, notServed, percentage };
   }, [companies]);
@@ -253,9 +259,9 @@ function MyCityPage() {
   const filteredCompanies = useMemo(() => {
     if (!sortedCompanies) return [];
     if (activeTab === 'all') return sortedCompanies;
-    if (activeTab === 'served') return sortedCompanies.filter(c => ['already_client', 'won_by_seller'].includes(c.samma_status));
-    if (activeTab === 'won') return sortedCompanies.filter(c => c.samma_status === 'won_by_seller');
-    if (activeTab === 'not_served') return sortedCompanies.filter(c => c.samma_status === 'not_served');
+    if (activeTab === 'served') return sortedCompanies.filter(c => c.is_samma_client);
+    if (activeTab === 'won') return sortedCompanies.filter(c => c.is_samma_client && c.won_by_seller);
+    if (activeTab === 'not_served') return sortedCompanies.filter(c => !c.is_samma_client);
     return sortedCompanies;
   }, [sortedCompanies, activeTab]);
 
@@ -268,15 +274,14 @@ function MyCityPage() {
     }
   };
 
-  const getSammaStatusBadge = (status: string) => {
-    switch (status) {
-      case 'already_client':
-        return <Badge variant="secondary" className="bg-secondary text-secondary-foreground">Já era cliente</Badge>;
-      case 'won_by_seller':
+  const getSammaStatusBadge = (company: any) => {
+    if (company.is_samma_client) {
+      if (company.won_by_seller) {
         return <Badge variant="outline" className="bg-primary/15 text-primary border-primary/30">Conquistada por mim</Badge>;
-      default:
-        return <Badge variant="outline" className="bg-muted text-muted-foreground border-transparent">Não atendida</Badge>;
+      }
+      return <Badge variant="secondary" className="bg-secondary text-secondary-foreground">Atendida pela SAMMA</Badge>;
     }
+    return <Badge variant="outline" className="bg-muted text-muted-foreground border-transparent">Não atendida</Badge>;
   };
 
   const getUrgencyInfo = (dateStr: string) => {
@@ -403,7 +408,7 @@ function MyCityPage() {
                         </div>
                         <div className="flex items-center gap-2 mt-1">
                           <span className="text-xs text-muted-foreground">Situação:</span>
-                          {getSammaStatusBadge(company.samma_status)}
+                          {getSammaStatusBadge(company)}
                         </div>
                       </div>
                       <Button 
@@ -474,7 +479,7 @@ function MyCityPage() {
                         <CardTitle className="text-lg font-bold">{company.name}</CardTitle>
                       </div>
                       <div className="flex flex-wrap gap-2 pt-1">
-                        {getSammaStatusBadge(company.samma_status)}
+                        {getSammaStatusBadge(company)}
                         <Badge variant={urgency.color as any} className={cn("text-[10px] py-0", urgency.class)}>
                           {urgency.label}
                         </Badge>
@@ -630,36 +635,49 @@ function MyCityPage() {
                 {errors.contract_end_date && <p className="text-xs text-destructive">{errors.contract_end_date.message}</p>}
               </div>
 
-              <div className="space-y-3">
-                <Label>Situação com a SAMMA *</Label>
-                <RadioGroup 
-                  defaultValue="not_served" 
-                  className="grid grid-cols-1 gap-3"
-                  value={watch("samma_status")}
-                  onValueChange={(val: any) => setValue("samma_status", val)}
-                >
-                  {[
-                    { id: 'already_client', label: 'Já era cliente SAMMA', desc: 'A empresa já era cliente antes do meu trabalho' },
-                    { id: 'won_by_seller', label: 'Cliente conquistado por mim', desc: 'Eu prospectei e agora a SAMMA atende' },
-                    { id: 'not_served', label: 'Ainda não atendida', desc: 'Cadastrada para monitoramento apenas' }
-                  ].map((option) => (
-                    <Label
-                      key={option.id}
-                      className={cn(
-                        "flex flex-col gap-1 p-4 rounded-xl border-2 cursor-pointer transition-all hover:bg-muted/50",
-                        watch("samma_status") === option.id ? "border-primary bg-primary/5" : "border-border"
-                      )}
-                    >
-                      <div className="flex items-center gap-2">
-                        <RadioGroupItem value={option.id} id={option.id} />
-                        <span className="font-bold">{option.label}</span>
-                      </div>
-                      <span className="text-xs text-muted-foreground ml-6">{option.desc}</span>
-                    </Label>
-                  ))}
-                </RadioGroup>
-                {errors.samma_status && <p className="text-xs text-destructive">{errors.samma_status.message}</p>}
+              <div className="flex items-center justify-between p-4 bg-card rounded-lg border border-border">
+                <div className="space-y-0.5">
+                  <Label htmlFor="is_samma_client">A empresa é atendida pela SAMMA? *</Label>
+                  <p className="text-xs text-muted-foreground">Selecione se esta empresa já é cliente.</p>
+                </div>
+                <Switch 
+                  id="is_samma_client"
+                  checked={isSammaClient}
+                  onCheckedChange={(checked) => {
+                    setValue("is_samma_client", checked);
+                    if (!checked) setValue("won_by_seller", false);
+                  }}
+                />
               </div>
+
+              {isSammaClient && (
+                <div className="space-y-3 animate-in fade-in slide-in-from-top-2 duration-300">
+                  <Label>Esta empresa foi conquistada por você? *</Label>
+                  <RadioGroup 
+                    className="grid grid-cols-2 gap-3"
+                    value={watch("won_by_seller") ? "yes" : "no"}
+                    onValueChange={(val) => setValue("won_by_seller", val === "yes")}
+                  >
+                    {[
+                      { id: 'yes', label: 'Sim', desc: 'Eu conquistei' },
+                      { id: 'no', label: 'Não', desc: 'Já era cliente' }
+                    ].map((option) => (
+                      <Label
+                        key={option.id}
+                        className={cn(
+                          "flex flex-col gap-1 p-3 rounded-xl border-2 cursor-pointer transition-all hover:bg-muted/50",
+                          (watch("won_by_seller") ? "yes" : "no") === option.id ? "border-primary bg-primary/5" : "border-border"
+                        )}
+                      >
+                        <div className="flex items-center gap-2">
+                          <RadioGroupItem value={option.id} id={option.id} />
+                          <span className="font-bold">{option.label}</span>
+                        </div>
+                      </Label>
+                    ))}
+                  </RadioGroup>
+                </div>
+              )}
 
               <div className="space-y-2">
                 <Label htmlFor="responsible_name">Nome do responsável pelo contrato *</Label>
