@@ -1,0 +1,2 @@
+ALTER TABLE public.companies ADD COLUMN IF NOT EXISTS won_by_seller BOOLEAN DEFAULT false;
+COMMENT ON COLUMN public.companies.won_by_seller IS 'Indicates if the company was won by the current seller.';
