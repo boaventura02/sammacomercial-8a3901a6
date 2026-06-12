@@ -823,6 +823,76 @@ function MyCityPage() {
           </SheetFooter>
         </SheetContent>
       </Sheet>
+
+      <Dialog open={importOpen} onOpenChange={(o) => { setImportOpen(o); if (!o) setImportRows([]); }}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <FileSpreadsheet className="w-5 h-5 text-primary" />
+              Importar sedes via planilha
+            </DialogTitle>
+            <DialogDescription>
+              Envie um arquivo <strong>.xlsx</strong> com as colunas <strong>Unidade</strong>, <strong>ENDEREÇO</strong>, <strong>CEP</strong> e <strong>Cidade</strong>. Cada linha será cadastrada como uma nova sede.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".xlsx,.xls,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+              onChange={handleFileSelected}
+              className="block w-full text-sm text-muted-foreground file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-primary-foreground hover:file:bg-primary/90"
+            />
+
+            {importRows.length > 0 && (
+              <div className="border rounded-lg max-h-72 overflow-auto">
+                <table className="w-full text-sm">
+                  <thead className="bg-muted/40 sticky top-0">
+                    <tr>
+                      <th className="text-left p-2 font-semibold">Unidade</th>
+                      <th className="text-left p-2 font-semibold">Endereço</th>
+                      <th className="text-left p-2 font-semibold">CEP</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {importRows.map((r, i) => (
+                      <tr key={i} className="border-t">
+                        <td className="p-2">{r.name}</td>
+                        <td className="p-2 text-muted-foreground">{r.address || '—'}</td>
+                        <td className="p-2 text-muted-foreground">{r.cep || '—'}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+
+            {importRows.length > 0 && (
+              <p className="text-sm text-muted-foreground">
+                <strong>{importRows.length}</strong> sede(s) prontas para importar.
+              </p>
+            )}
+          </div>
+
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setImportOpen(false)} disabled={importing}>
+              Cancelar
+            </Button>
+            <Button
+              onClick={handleConfirmImport}
+              disabled={importing || importRows.length === 0}
+              className="bg-green-600 hover:bg-green-700"
+            >
+              {importing ? (
+                <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Importando...</>
+              ) : (
+                <>Importar {importRows.length > 0 ? `(${importRows.length})` : ''}</>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
