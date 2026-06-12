@@ -1,5 +1,8 @@
 import { createFileRoute } from '@tanstack/react-router';
 import { useAuth } from '@/contexts/AuthContext';
+import * as XLSX from 'xlsx';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Upload, FileSpreadsheet, Download } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -93,6 +96,10 @@ function MyCityPage() {
   const [isAlertsExpanded, setIsAlertsExpanded] = useState(true);
   const [highlightedId, setHighlightedId] = useState<string | null>(null);
   const gridRefs = useRef<Record<string, HTMLDivElement | null>>({});
+  const [importOpen, setImportOpen] = useState(false);
+  const [importRows, setImportRows] = useState<{ name: string; address: string; cep: string; cidade: string }[]>([]);
+  const [importing, setImporting] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const { data: companies, isLoading: loadingCompanies } = useQuery({
     queryKey: ['seller-companies', profile?.id],
@@ -111,7 +118,9 @@ function MyCityPage() {
   const sortedCompanies = useMemo(() => {
     if (!companies) return [];
     return [...companies].sort((a, b) => {
-      return new Date(a.contract_end_date).getTime() - new Date(b.contract_end_date).getTime();
+      const ta = a.contract_end_date ? new Date(a.contract_end_date).getTime() : Infinity;
+      const tb = b.contract_end_date ? new Date(b.contract_end_date).getTime() : Infinity;
+      return ta - tb;
     });
   }, [companies]);
 
@@ -252,8 +261,8 @@ function MyCityPage() {
     if (!companies) return [];
     const limitDate = addDays(new Date(), 60);
     return companies
-      .filter(c => isBefore(parseISO(c.contract_end_date), limitDate))
-      .sort((a, b) => new Date(a.contract_end_date).getTime() - new Date(b.contract_end_date).getTime());
+      .filter(c => c.contract_end_date && isBefore(parseISO(c.contract_end_date), limitDate))
+      .sort((a, b) => new Date(a.contract_end_date!).getTime() - new Date(b.contract_end_date!).getTime());
   }, [companies]);
 
   const filteredCompanies = useMemo(() => {
@@ -284,7 +293,10 @@ function MyCityPage() {
     return <Badge variant="outline" className="bg-muted text-muted-foreground border-transparent">Não atendida</Badge>;
   };
 
-  const getUrgencyInfo = (dateStr: string) => {
+  const getUrgencyInfo = (dateStr: string | null) => {
+    if (!dateStr) {
+      return { label: "Sem data", color: "secondary", class: "bg-muted text-muted-foreground", days: 0 };
+    }
     const date = parseISO(dateStr);
     const today = new Date();
     const days = differenceInDays(date, today);
@@ -304,6 +316,82 @@ function MyCityPage() {
     return { label: "No prazo", color: "secondary", class: "bg-green-600 text-white", days };
   };
 
+  const normalizeKey = (k: string) =>
+    k.toString().trim().toLowerCase()
+      .normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+
+  const handleFileSelected = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      const buf = await file.arrayBuffer();
+      const wb = XLSX.read(buf, { type: 'array' });
+      const ws = wb.Sheets[wb.SheetNames[0]];
+      const json = XLSX.utils.sheet_to_json<Record<string, any>>(ws, { defval: '' });
+      const rows = json.map((r) => {
+        const map: Record<string, any> = {};
+        Object.keys(r).forEach((k) => { map[normalizeKey(k)] = r[k]; });
+        return {
+          name: String(map['unidade'] ?? map['nome'] ?? map['sede'] ?? '').trim(),
+          address: String(map['endereco'] ?? map['endereço'] ?? map['address'] ?? '').trim(),
+          cep: String(map['cep'] ?? '').trim(),
+          cidade: String(map['cidade'] ?? '').trim(),
+        };
+      }).filter((r) => r.name);
+      setImportRows(rows);
+      if (rows.length === 0) {
+        toast({ title: 'Nenhuma sede encontrada na planilha', description: 'Verifique se há a coluna "Unidade".', variant: 'destructive' });
+      }
+    } catch (err) {
+      console.error(err);
+      toast({ title: 'Erro ao ler a planilha', description: 'Verifique o formato do arquivo.', variant: 'destructive' });
+    } finally {
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
+
+  const handleConfirmImport = async () => {
+    if (!profile?.id || !profile?.city_id) {
+      toast({ title: 'Perfil incompleto', variant: 'destructive' });
+      return;
+    }
+    setImporting(true);
+    try {
+      const payload = importRows.map((r) => ({
+        seller_id: profile.id,
+        city_id: profile.city_id!,
+        name: r.name,
+        address: r.address || null,
+        cep: r.cep || null,
+        has_outsourced: false,
+        outsourced_services: [],
+        is_samma_client: false,
+        won_by_seller: false,
+        samma_status: 'novo',
+      }));
+      const { error } = await supabase.from('companies').insert(payload);
+      if (error) throw error;
+      toast({ title: `${payload.length} sede(s) importada(s) com sucesso! ✅` });
+      queryClient.invalidateQueries({ queryKey: ['seller-companies'] });
+      setImportOpen(false);
+      setImportRows([]);
+    } catch (err: any) {
+      console.error(err);
+      toast({ title: 'Erro na importação', description: err.message ?? 'Tente novamente.', variant: 'destructive' });
+    } finally {
+      setImporting(false);
+    }
+  };
+
+  const downloadTemplate = () => {
+    const ws = XLSX.utils.json_to_sheet([
+      { Unidade: 'Ex: Sede Central', 'ENDEREÇO': 'Av. Exemplo, 123 - Centro', CEP: '74000-000', Cidade: 'Goiânia' },
+    ]);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Sedes');
+    XLSX.writeFile(wb, 'modelo-sedes.xlsx');
+  };
+
   if (loadingCompanies) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[400px]">
@@ -315,9 +403,19 @@ function MyCityPage() {
 
   return (
     <div className="space-y-10 max-w-7xl mx-auto pb-24 px-4 sm:px-6">
-      <div className="flex flex-col gap-2">
-        <h1 className="text-3xl font-bold tracking-tight">Minha Cidade</h1>
-        <p className="text-muted-foreground">Gerencie as empresas e contratos na sua região.</p>
+      <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+        <div className="flex flex-col gap-2">
+          <h1 className="text-3xl font-bold tracking-tight">Minha Cidade</h1>
+          <p className="text-muted-foreground">Gerencie as empresas e contratos na sua região.</p>
+        </div>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={downloadTemplate} className="gap-2">
+            <Download className="w-4 h-4" /> Modelo
+          </Button>
+          <Button variant="secondary" onClick={() => setImportOpen(true)} className="gap-2">
+            <Upload className="w-4 h-4" /> Importar planilha
+          </Button>
+        </div>
       </div>
 
       {/* SECTION 1 — STATS OVERVIEW */}
@@ -400,7 +498,7 @@ function MyCityPage() {
                         <div className="text-sm text-muted-foreground flex flex-wrap gap-x-3 gap-y-1">
                           <span className="flex items-center gap-1">
                             <Calendar className="w-3.5 h-3.5" />
-                            Vence em: {format(parseISO(company.contract_end_date), 'dd/MM/yyyy')}
+                            Vence em: {company.contract_end_date ? format(parseISO(company.contract_end_date), 'dd/MM/yyyy') : '—'}
                           </span>
                           <span className="font-medium text-primary">
                             · Faltam {urgency.days} dias
@@ -516,7 +614,7 @@ function MyCityPage() {
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2 text-sm text-muted-foreground">
                           <Calendar className="w-4 h-4" />
-                          <span>{format(parseISO(company.contract_end_date), 'dd/MM/yyyy')}</span>
+                          <span>{company.contract_end_date ? format(parseISO(company.contract_end_date), 'dd/MM/yyyy') : 'Sem data'}</span>
                         </div>
                       </div>
 
@@ -725,6 +823,76 @@ function MyCityPage() {
           </SheetFooter>
         </SheetContent>
       </Sheet>
+
+      <Dialog open={importOpen} onOpenChange={(o) => { setImportOpen(o); if (!o) setImportRows([]); }}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <FileSpreadsheet className="w-5 h-5 text-primary" />
+              Importar sedes via planilha
+            </DialogTitle>
+            <DialogDescription>
+              Envie um arquivo <strong>.xlsx</strong> com as colunas <strong>Unidade</strong>, <strong>ENDEREÇO</strong>, <strong>CEP</strong> e <strong>Cidade</strong>. Cada linha será cadastrada como uma nova sede.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".xlsx,.xls,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+              onChange={handleFileSelected}
+              className="block w-full text-sm text-muted-foreground file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-primary-foreground hover:file:bg-primary/90"
+            />
+
+            {importRows.length > 0 && (
+              <div className="border rounded-lg max-h-72 overflow-auto">
+                <table className="w-full text-sm">
+                  <thead className="bg-muted/40 sticky top-0">
+                    <tr>
+                      <th className="text-left p-2 font-semibold">Unidade</th>
+                      <th className="text-left p-2 font-semibold">Endereço</th>
+                      <th className="text-left p-2 font-semibold">CEP</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {importRows.map((r, i) => (
+                      <tr key={i} className="border-t">
+                        <td className="p-2">{r.name}</td>
+                        <td className="p-2 text-muted-foreground">{r.address || '—'}</td>
+                        <td className="p-2 text-muted-foreground">{r.cep || '—'}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+
+            {importRows.length > 0 && (
+              <p className="text-sm text-muted-foreground">
+                <strong>{importRows.length}</strong> sede(s) prontas para importar.
+              </p>
+            )}
+          </div>
+
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setImportOpen(false)} disabled={importing}>
+              Cancelar
+            </Button>
+            <Button
+              onClick={handleConfirmImport}
+              disabled={importing || importRows.length === 0}
+              className="bg-green-600 hover:bg-green-700"
+            >
+              {importing ? (
+                <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Importando...</>
+              ) : (
+                <>Importar {importRows.length > 0 ? `(${importRows.length})` : ''}</>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
