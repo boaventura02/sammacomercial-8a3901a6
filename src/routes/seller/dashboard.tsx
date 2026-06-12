@@ -286,7 +286,10 @@ function MyCityPage() {
     return <Badge variant="outline" className="bg-muted text-muted-foreground border-transparent">Não atendida</Badge>;
   };
 
-  const getUrgencyInfo = (dateStr: string) => {
+  const getUrgencyInfo = (dateStr: string | null) => {
+    if (!dateStr) {
+      return { label: "Sem data", color: "secondary", class: "bg-muted text-muted-foreground", days: 0 };
+    }
     const date = parseISO(dateStr);
     const today = new Date();
     const days = differenceInDays(date, today);
