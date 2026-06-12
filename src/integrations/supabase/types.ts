@@ -100,6 +100,7 @@ export type Database = {
           seller_id: string
           service_type: string | null
           updated_at: string
+          won_by_seller: boolean | null
           workforce_count: number | null
         }
         Insert: {
@@ -118,6 +119,7 @@ export type Database = {
           seller_id: string
           service_type?: string | null
           updated_at?: string
+          won_by_seller?: boolean | null
           workforce_count?: number | null
         }
         Update: {
@@ -136,6 +138,7 @@ export type Database = {
           seller_id?: string
           service_type?: string | null
           updated_at?: string
+          won_by_seller?: boolean | null
           workforce_count?: number | null
         }
         Relationships: [
