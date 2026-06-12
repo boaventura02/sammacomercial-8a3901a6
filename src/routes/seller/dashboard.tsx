@@ -405,7 +405,7 @@ function MyCityPage() {
                         <div className="text-sm text-muted-foreground flex flex-wrap gap-x-3 gap-y-1">
                           <span className="flex items-center gap-1">
                             <Calendar className="w-3.5 h-3.5" />
-                            Vence em: {format(parseISO(company.contract_end_date), 'dd/MM/yyyy')}
+                            Vence em: {company.contract_end_date ? format(parseISO(company.contract_end_date), 'dd/MM/yyyy') : '—'}
                           </span>
                           <span className="font-medium text-primary">
                             · Faltam {urgency.days} dias
