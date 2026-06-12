@@ -254,8 +254,8 @@ function MyCityPage() {
     if (!companies) return [];
     const limitDate = addDays(new Date(), 60);
     return companies
-      .filter(c => isBefore(parseISO(c.contract_end_date), limitDate))
-      .sort((a, b) => new Date(a.contract_end_date).getTime() - new Date(b.contract_end_date).getTime());
+      .filter(c => c.contract_end_date && isBefore(parseISO(c.contract_end_date), limitDate))
+      .sort((a, b) => new Date(a.contract_end_date!).getTime() - new Date(b.contract_end_date!).getTime());
   }, [companies]);
 
   const filteredCompanies = useMemo(() => {
