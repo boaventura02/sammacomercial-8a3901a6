@@ -671,6 +671,21 @@ function ActivityPage() {
                                         {type === 'other' && (
                                             <p className="text-sm ml-2">→ Descrição: {formValues.other_description}</p>
                                         )}
+                                        {type === 'schedule' && (
+                                            <div className={cn(
+                                                "ml-2 mt-1 p-2 rounded-md",
+                                                formValues.schedule_is_show && "bg-fuchsia-500/10 border border-fuchsia-500/50"
+                                            )}>
+                                                {formValues.schedule_is_show && (
+                                                    <p className="text-sm font-semibold text-fuchsia-300 flex items-center gap-1">
+                                                        <Sparkles className="w-3 h-3" /> SHOW
+                                                    </p>
+                                                )}
+                                                <p className="text-sm">→ Empresa: {companies?.find((c: any) => c.id === formValues.schedule_company_id)?.name}</p>
+                                                <p className="text-sm">→ Quando: {formValues.schedule_date && format(new Date(formValues.schedule_date), "dd/MM/yyyy 'às' HH:mm")}</p>
+                                                {formValues.schedule_notes && <p className="text-sm">→ Obs: {formValues.schedule_notes}</p>}
+                                            </div>
+                                        )}
                                     </div>
                                 ))}
 
