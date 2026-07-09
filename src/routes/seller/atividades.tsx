@@ -41,6 +41,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
 import { format, parseISO, isBefore, addDays } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
 
 export const Route = createFileRoute('/seller/atividades')({
   component: ActivityPage,
