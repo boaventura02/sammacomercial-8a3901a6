@@ -275,43 +275,54 @@ function ActivityPage() {
       </Card>
 
       {/* History */}
-      <div className="space-y-4">
+      <div className="space-y-8">
         {loadingActivities ? (
           <div className="flex justify-center p-8">
             <Loader2 className="w-8 h-8 animate-spin text-primary" />
           </div>
         ) : activities && activities.length > 0 ? (
-          activities.map((activity: any) => (
-            <Card key={activity.id} className="bg-card/50 overflow-hidden border-border/50">
-              <CardContent className="p-4 space-y-4">
-                <div className="flex justify-between items-center border-b border-border/10 pb-2">
-                  <div className="flex items-center gap-2 text-sm font-medium">
-                    <Calendar className="w-4 h-4 text-muted-foreground" />
-                    {format(parseISO(activity.activity_date), 'dd/MM/yyyy')}
+          activities.map((activity: any) => {
+            const dayDate = parseISO(activity.activity_date);
+            return (
+            <Card key={activity.id} className="bg-card/60 overflow-hidden border border-border/60 rounded-2xl shadow-lg shadow-black/20">
+              {/* Day header */}
+              <div className="bg-gradient-to-r from-primary/15 via-primary/5 to-transparent border-b border-border/60 px-5 py-4 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="flex items-center justify-center w-11 h-11 rounded-xl bg-primary/20 border border-primary/30">
+                    <Calendar className="w-5 h-5 text-primary" />
                   </div>
-                  <div className="flex flex-wrap gap-1">
-                    {(activity.activity_types as string[])?.map((type: string) => (
-                        <Badge key={type} variant="secondary" className="text-[10px] capitalize">
-                            {type}
-                        </Badge>
-                    ))}
+                  <div className="flex flex-col leading-tight">
+                    <span className="text-lg font-bold tracking-tight">
+                      {format(dayDate, 'dd/MM', { locale: ptBR })}
+                    </span>
+                    <span className="text-[11px] font-semibold uppercase tracking-widest text-primary/80">
+                      {format(dayDate, 'EEEE', { locale: ptBR })}
+                    </span>
                   </div>
                 </div>
-                
-                <div className="space-y-3">
-                  {(activity.activity_items as any[])?.sort((a: any, b: any) => a.type === 'new_company' ? 1 : -1).map((item: any) => {
+                <div className="flex flex-wrap gap-1 justify-end max-w-[60%]">
+                  {(activity.activity_types as string[])?.map((type: string) => (
+                    <Badge key={type} variant="secondary" className="text-[10px] capitalize">
+                      {type}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+
+              <CardContent className="p-5 space-y-3">
+                {(activity.activity_items as any[])?.sort((a: any, b: any) => a.type === 'new_company' ? 1 : -1).map((item: any) => {
                     const schedule = item.type === 'schedule' ? decodeSchedule(item.other_description) : null;
                     const isShow = schedule?.isShow;
                     return (
                     <div
                       key={item.id}
                       className={cn(
-                        "flex flex-col gap-1 p-2 rounded-lg",
+                        "flex flex-col gap-1 p-3 rounded-lg",
                         isShow
                           ? "bg-fuchsia-500/10 border-2 border-fuchsia-500/60 shadow-[0_0_20px_-8px_rgba(217,70,239,0.5)]"
                           : schedule
                             ? "bg-blue-500/10 border border-blue-500/40"
-                            : "bg-background/40"
+                            : "bg-background/40 border border-border/40"
                       )}
                     >
                       <div className="flex items-center gap-2 text-sm font-medium">
@@ -347,16 +358,16 @@ function ActivityPage() {
                     </div>
                     );
                   })}
-                </div>
 
                 {activity.general_notes && (
-                    <div className="pt-2 border-t border-border/10">
+                    <div className="pt-3 mt-1 border-t border-border/30">
                         <p className="text-sm text-muted-foreground">💬 {activity.general_notes}</p>
                     </div>
                 )}
               </CardContent>
             </Card>
-          ))
+            );
+          })
         ) : (
           <div className="text-center py-20 bg-card/40 rounded-2xl border-2 border-dashed border-border/50">
             <ClipboardList className="w-16 h-16 mx-auto text-muted-foreground/30 mb-4" />
