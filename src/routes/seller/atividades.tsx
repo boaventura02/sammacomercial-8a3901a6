@@ -281,94 +281,135 @@ function ActivityPage() {
             <Loader2 className="w-8 h-8 animate-spin text-primary" />
           </div>
         ) : activities && activities.length > 0 ? (
-          activities.map((activity: any) => {
-            const dayDate = parseISO(activity.activity_date);
-            return (
-            <Card key={activity.id} className="bg-card/80 overflow-hidden border-2 border-border/70 rounded-3xl shadow-2xl shadow-black/40 ring-1 ring-white/5">
-              {/* Day header */}
-              <div className="bg-gradient-to-r from-primary/25 via-primary/10 to-transparent border-b-2 border-primary/30 px-6 py-5 flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                  <div className="flex items-center justify-center w-14 h-14 rounded-2xl bg-primary/25 border border-primary/40 shadow-lg shadow-primary/20">
-                    <Calendar className="w-6 h-6 text-primary" />
-                  </div>
-                  <div className="flex flex-col leading-tight">
-                    <span className="text-2xl font-black tracking-tight">
-                      {format(dayDate, 'dd/MM', { locale: ptBR })}
-                    </span>
-                    <span className="text-xs font-bold uppercase tracking-[0.2em] text-primary">
-                      {format(dayDate, 'EEEE', { locale: ptBR })}
-                    </span>
-                  </div>
-                </div>
-                <div className="flex flex-wrap gap-1 justify-end max-w-[50%]">
-                  {(activity.activity_types as string[])?.map((type: string) => (
-                    <Badge key={type} variant="secondary" className="text-[10px] capitalize">
-                      {type}
-                    </Badge>
-                  ))}
-                </div>
-              </div>
+          (() => {
+            // Agrupa atividades por dia
+            const groups = new Map<string, any[]>();
+            activities.forEach((a: any) => {
+              const key = a.activity_date;
+              if (!groups.has(key)) groups.set(key, []);
+              groups.get(key)!.push(a);
+            });
+            const sortedDays = Array.from(groups.entries()).sort((a, b) => b[0].localeCompare(a[0]));
 
+            return sortedDays.map(([dateKey, dayActivities]) => {
+              const dayDate = parseISO(dateKey);
+              const allItems = dayActivities.flatMap((a: any) =>
+                (a.activity_items as any[] || []).map((it: any) => ({ ...it, _parent: a }))
+              );
+              const shows: any[] = [];
+              const events: any[] = [];
+              allItems.forEach((item: any) => {
+                const schedule = item.type === 'schedule' ? decodeSchedule(item.other_description) : null;
+                if (schedule?.isShow) shows.push({ item, schedule });
+                else events.push({ item, schedule });
+              });
+              const notes = dayActivities.map((a: any) => a.general_notes).filter(Boolean);
+              const allTypes = Array.from(new Set(dayActivities.flatMap((a: any) => (a.activity_types as string[]) || [])));
 
-              <CardContent className="p-5 space-y-3">
-                {(activity.activity_items as any[])?.sort((a: any, b: any) => a.type === 'new_company' ? 1 : -1).map((item: any) => {
-                    const schedule = item.type === 'schedule' ? decodeSchedule(item.other_description) : null;
-                    const isShow = schedule?.isShow;
-                    return (
-                    <div
-                      key={item.id}
-                      className={cn(
-                        "flex flex-col gap-1 p-3 rounded-lg",
-                        isShow
-                          ? "bg-fuchsia-500/10 border-2 border-fuchsia-500/60 shadow-[0_0_20px_-8px_rgba(217,70,239,0.5)]"
-                          : schedule
-                            ? "bg-blue-500/10 border border-blue-500/40"
-                            : "bg-background/40 border border-border/40"
+              const renderItem = ({ item, schedule }: any) => {
+                const isShow = schedule?.isShow;
+                return (
+                  <div
+                    key={item.id}
+                    className={cn(
+                      "flex flex-col gap-1 p-3 rounded-lg",
+                      isShow
+                        ? "bg-fuchsia-500/10 border-2 border-fuchsia-500/60 shadow-[0_0_20px_-8px_rgba(217,70,239,0.5)]"
+                        : schedule
+                          ? "bg-blue-500/10 border border-blue-500/40"
+                          : "bg-background/40 border border-border/40"
+                    )}
+                  >
+                    <div className="flex items-center gap-2 text-sm font-medium">
+                      {(() => {
+                        if (isShow) return <Sparkles className="w-4 h-4 text-fuchsia-400" />;
+                        const config = ACTIVITY_TYPES.find(t => t.id === item.type);
+                        const Icon = config?.icon;
+                        return Icon ? <Icon className={cn("w-4 h-4", schedule ? "text-blue-400" : "text-primary")} /> : null;
+                      })()}
+                      <span className={cn("capitalize", isShow && "text-fuchsia-300 font-semibold")}>
+                        {isShow ? '🎤 SHOW' : ACTIVITY_TYPES.find(t => t.id === item.type)?.label || item.type}
+                      </span>
+                      {item.company_id && (
+                        <span className="text-muted-foreground">→ {companies?.find((c: any) => c.id === item.company_id)?.name || 'Empresa'}</span>
                       )}
-                    >
-                      <div className="flex items-center gap-2 text-sm font-medium">
-                        {(() => {
-                          if (isShow) return <Sparkles className="w-4 h-4 text-fuchsia-400" />;
-                          const config = ACTIVITY_TYPES.find(t => t.id === item.type);
-                          const Icon = config?.icon;
-                          return Icon ? <Icon className={cn("w-4 h-4", schedule ? "text-blue-400" : "text-primary")} /> : null;
-                        })()}
-                        <span className={cn("capitalize", isShow && "text-fuchsia-300 font-semibold")}>
-                          {isShow ? '🎤 SHOW' : ACTIVITY_TYPES.find(t => t.id === item.type)?.label || item.type}
-                        </span>
-                        {item.company_id && (
-                          <span className="text-muted-foreground">→ {companies?.find((c: any) => c.id === item.company_id)?.name || 'Empresa'}</span>
+                    </div>
+                    {item.negotiation_status && (
+                      <p className="text-xs text-muted-foreground ml-6 italic">Status: {item.negotiation_status}</p>
+                    )}
+                    {schedule && (
+                      <>
+                        <p className={cn("text-xs ml-6", isShow ? "text-fuchsia-200" : "text-blue-200")}>
+                          📅 {format(new Date(schedule.date), "dd/MM/yyyy 'às' HH:mm")}
+                        </p>
+                        {schedule.notes && (
+                          <p className="text-xs text-muted-foreground ml-6">{schedule.notes}</p>
                         )}
-                      </div>
-                      {item.negotiation_status && (
-                        <p className="text-xs text-muted-foreground ml-6 italic">Status: {item.negotiation_status}</p>
-                      )}
-                      {schedule && (
-                        <>
-                          <p className={cn("text-xs ml-6", isShow ? "text-fuchsia-200" : "text-blue-200")}>
-                            📅 {format(new Date(schedule.date), "dd/MM/yyyy 'às' HH:mm")}
-                          </p>
-                          {schedule.notes && (
-                            <p className="text-xs text-muted-foreground ml-6">{schedule.notes}</p>
-                          )}
-                        </>
-                      )}
-                      {!schedule && item.other_description && (
-                        <p className="text-xs text-muted-foreground ml-6">{item.other_description}</p>
-                      )}
-                    </div>
-                    );
-                  })}
+                      </>
+                    )}
+                    {!schedule && item.other_description && (
+                      <p className="text-xs text-muted-foreground ml-6">{item.other_description}</p>
+                    )}
+                  </div>
+                );
+              };
 
-                {activity.general_notes && (
-                    <div className="pt-3 mt-1 border-t border-border/30">
-                        <p className="text-sm text-muted-foreground">💬 {activity.general_notes}</p>
+              return (
+                <Card key={dateKey} className="bg-card/80 overflow-hidden border-2 border-border/70 rounded-3xl shadow-2xl shadow-black/40 ring-1 ring-white/5">
+                  <div className="bg-gradient-to-r from-primary/25 via-primary/10 to-transparent border-b-2 border-primary/30 px-6 py-5 flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                      <div className="flex items-center justify-center w-14 h-14 rounded-2xl bg-primary/25 border border-primary/40 shadow-lg shadow-primary/20">
+                        <Calendar className="w-6 h-6 text-primary" />
+                      </div>
+                      <div className="flex flex-col leading-tight">
+                        <span className="text-2xl font-black tracking-tight">
+                          {format(dayDate, 'dd/MM', { locale: ptBR })}
+                        </span>
+                        <span className="text-xs font-bold uppercase tracking-[0.2em] text-primary">
+                          {format(dayDate, 'EEEE', { locale: ptBR })}
+                        </span>
+                      </div>
                     </div>
-                )}
-              </CardContent>
-            </Card>
-            );
-          })
+                    <div className="flex flex-wrap gap-1 justify-end max-w-[50%]">
+                      {allTypes.map((type: string) => (
+                        <Badge key={type} variant="secondary" className="text-[10px] capitalize">
+                          {type}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+
+                  <CardContent className="p-5 space-y-5">
+                    {events.length > 0 && (
+                      <div className="space-y-2">
+                        <p className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground/70 px-1">Eventos & Atividades</p>
+                        <div className="space-y-2">{events.map(renderItem)}</div>
+                      </div>
+                    )}
+
+                    {shows.length > 0 && (
+                      <div className="space-y-2">
+                        <div className="flex items-center gap-2 px-1">
+                          <Sparkles className="w-3.5 h-3.5 text-fuchsia-400" />
+                          <p className="text-[11px] font-bold uppercase tracking-widest text-fuchsia-300">Shows & Apresentações</p>
+                          <div className="flex-1 h-px bg-gradient-to-r from-fuchsia-500/40 to-transparent" />
+                        </div>
+                        <div className="space-y-2">{shows.map(renderItem)}</div>
+                      </div>
+                    )}
+
+                    {notes.length > 0 && (
+                      <div className="pt-3 mt-1 border-t border-border/30 space-y-1">
+                        {notes.map((n, i) => (
+                          <p key={i} className="text-sm text-muted-foreground">💬 {n}</p>
+                        ))}
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              );
+            });
+          })()
         ) : (
           <div className="text-center py-20 bg-card/40 rounded-2xl border-2 border-dashed border-border/50">
             <ClipboardList className="w-16 h-16 mx-auto text-muted-foreground/30 mb-4" />
@@ -377,6 +418,7 @@ function ActivityPage() {
           </div>
         )}
       </div>
+
 
       {/* Wizard Modal */}
       <Dialog open={isWizardOpen} onOpenChange={(open) => !open && resetWizard()}>
