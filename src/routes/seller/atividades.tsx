@@ -298,15 +298,31 @@ function ActivityPage() {
                 </div>
                 
                 <div className="space-y-3">
-                  {(activity.activity_items as any[])?.sort((a: any, b: any) => a.type === 'new_company' ? 1 : -1).map((item: any) => (
-                    <div key={item.id} className="flex flex-col gap-1 p-2 rounded-lg bg-background/40">
+                  {(activity.activity_items as any[])?.sort((a: any, b: any) => a.type === 'new_company' ? 1 : -1).map((item: any) => {
+                    const schedule = item.type === 'schedule' ? decodeSchedule(item.other_description) : null;
+                    const isShow = schedule?.isShow;
+                    return (
+                    <div
+                      key={item.id}
+                      className={cn(
+                        "flex flex-col gap-1 p-2 rounded-lg",
+                        isShow
+                          ? "bg-fuchsia-500/10 border-2 border-fuchsia-500/60 shadow-[0_0_20px_-8px_rgba(217,70,239,0.5)]"
+                          : schedule
+                            ? "bg-blue-500/10 border border-blue-500/40"
+                            : "bg-background/40"
+                      )}
+                    >
                       <div className="flex items-center gap-2 text-sm font-medium">
                         {(() => {
+                          if (isShow) return <Sparkles className="w-4 h-4 text-fuchsia-400" />;
                           const config = ACTIVITY_TYPES.find(t => t.id === item.type);
                           const Icon = config?.icon;
-                          return Icon ? <Icon className="w-4 h-4 text-primary" /> : null;
+                          return Icon ? <Icon className={cn("w-4 h-4", schedule ? "text-blue-400" : "text-primary")} /> : null;
                         })()}
-                        <span className="capitalize">{ACTIVITY_TYPES.find(t => t.id === item.type)?.label || item.type}</span>
+                        <span className={cn("capitalize", isShow && "text-fuchsia-300 font-semibold")}>
+                          {isShow ? '🎤 SHOW' : ACTIVITY_TYPES.find(t => t.id === item.type)?.label || item.type}
+                        </span>
                         {item.company_id && (
                           <span className="text-muted-foreground">→ {companies?.find((c: any) => c.id === item.company_id)?.name || 'Empresa'}</span>
                         )}
@@ -314,10 +330,22 @@ function ActivityPage() {
                       {item.negotiation_status && (
                         <p className="text-xs text-muted-foreground ml-6 italic">Status: {item.negotiation_status}</p>
                       )}
-                      {item.other_description && (
+                      {schedule && (
+                        <>
+                          <p className={cn("text-xs ml-6", isShow ? "text-fuchsia-200" : "text-blue-200")}>
+                            📅 {format(new Date(schedule.date), "dd/MM/yyyy 'às' HH:mm")}
+                          </p>
+                          {schedule.notes && (
+                            <p className="text-xs text-muted-foreground ml-6">{schedule.notes}</p>
+                          )}
+                        </>
+                      )}
+                      {!schedule && item.other_description && (
                         <p className="text-xs text-muted-foreground ml-6">{item.other_description}</p>
                       )}
                     </div>
+                    );
+                  })}
                   ))}
                 </div>
 
