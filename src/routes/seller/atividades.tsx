@@ -275,7 +275,7 @@ function ActivityPage() {
       </Card>
 
       {/* History */}
-      <div className="space-y-8">
+      <div className="space-y-12">
         {loadingActivities ? (
           <div className="flex justify-center p-8">
             <Loader2 className="w-8 h-8 animate-spin text-primary" />
@@ -284,23 +284,23 @@ function ActivityPage() {
           activities.map((activity: any) => {
             const dayDate = parseISO(activity.activity_date);
             return (
-            <Card key={activity.id} className="bg-card/60 overflow-hidden border border-border/60 rounded-2xl shadow-lg shadow-black/20">
+            <Card key={activity.id} className="bg-card/80 overflow-hidden border-2 border-border/70 rounded-3xl shadow-2xl shadow-black/40 ring-1 ring-white/5">
               {/* Day header */}
-              <div className="bg-gradient-to-r from-primary/15 via-primary/5 to-transparent border-b border-border/60 px-5 py-4 flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="flex items-center justify-center w-11 h-11 rounded-xl bg-primary/20 border border-primary/30">
-                    <Calendar className="w-5 h-5 text-primary" />
+              <div className="bg-gradient-to-r from-primary/25 via-primary/10 to-transparent border-b-2 border-primary/30 px-6 py-5 flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  <div className="flex items-center justify-center w-14 h-14 rounded-2xl bg-primary/25 border border-primary/40 shadow-lg shadow-primary/20">
+                    <Calendar className="w-6 h-6 text-primary" />
                   </div>
                   <div className="flex flex-col leading-tight">
-                    <span className="text-lg font-bold tracking-tight">
+                    <span className="text-2xl font-black tracking-tight">
                       {format(dayDate, 'dd/MM', { locale: ptBR })}
                     </span>
-                    <span className="text-[11px] font-semibold uppercase tracking-widest text-primary/80">
+                    <span className="text-xs font-bold uppercase tracking-[0.2em] text-primary">
                       {format(dayDate, 'EEEE', { locale: ptBR })}
                     </span>
                   </div>
                 </div>
-                <div className="flex flex-wrap gap-1 justify-end max-w-[60%]">
+                <div className="flex flex-wrap gap-1 justify-end max-w-[50%]">
                   {(activity.activity_types as string[])?.map((type: string) => (
                     <Badge key={type} variant="secondary" className="text-[10px] capitalize">
                       {type}
@@ -308,6 +308,7 @@ function ActivityPage() {
                   ))}
                 </div>
               </div>
+
 
               <CardContent className="p-5 space-y-3">
                 {(activity.activity_items as any[])?.sort((a: any, b: any) => a.type === 'new_company' ? 1 : -1).map((item: any) => {
