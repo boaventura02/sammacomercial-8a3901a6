@@ -165,6 +165,15 @@ function ActivityPage() {
           companyId = newCompany.id;
         }
 
+        const scheduleData =
+          type === 'schedule'
+            ? encodeSchedule({
+                date: formValues.schedule_date,
+                isShow: !!formValues.schedule_is_show,
+                notes: formValues.schedule_notes,
+              })
+            : undefined;
+
         const { error: itemError } = await supabase
             .from('activity_items')
             .insert([{
@@ -173,7 +182,7 @@ function ActivityPage() {
                 company_id: companyId,
                 negotiation_status: formValues[`${type}_status`],
                 contract_status: formValues[`${type}_contract_status`],
-                other_description: formValues.other_description
+                other_description: type === 'schedule' ? scheduleData : formValues.other_description
             }]);
         
         if (itemError) throw itemError;
