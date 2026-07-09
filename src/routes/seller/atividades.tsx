@@ -442,6 +442,57 @@ function ActivityPage() {
                         </div>
                     )}
 
+                    {type === 'schedule' && (
+                        <div className="space-y-4">
+                            <div className="space-y-2">
+                                <Label>Qual empresa?</Label>
+                                <select
+                                    className="w-full h-10 px-3 rounded-md border border-input bg-background"
+                                    value={formValues.schedule_company_id || ""}
+                                    onChange={(e) => setFormValues({...formValues, schedule_company_id: e.target.value})}
+                                >
+                                    <option value="">Selecione uma empresa</option>
+                                    {companies?.map((c: any) => <option key={c.id} value={c.id}>{c.name}</option>)}
+                                </select>
+                            </div>
+                            <div className="space-y-2">
+                                <Label>Data e hora do agendamento *</Label>
+                                <Input
+                                    type="datetime-local"
+                                    value={formValues.schedule_date || ""}
+                                    onChange={(e) => setFormValues({...formValues, schedule_date: e.target.value})}
+                                />
+                            </div>
+                            <div className={cn(
+                                "flex items-center justify-between p-3 rounded-lg border-2 transition-all",
+                                formValues.schedule_is_show
+                                    ? "border-fuchsia-500 bg-fuchsia-500/10"
+                                    : "border-border bg-background"
+                            )}>
+                                <div className="flex items-center gap-2">
+                                    <Music className={cn("w-5 h-5", formValues.schedule_is_show ? "text-fuchsia-500" : "text-muted-foreground")} />
+                                    <div>
+                                        <Label className="cursor-pointer">É um Show?</Label>
+                                        <p className="text-[11px] text-muted-foreground">Shows ficam destacados na agenda</p>
+                                    </div>
+                                </div>
+                                <Switch
+                                    checked={!!formValues.schedule_is_show}
+                                    onCheckedChange={(checked) => setFormValues({...formValues, schedule_is_show: checked})}
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <Label>Observações (opcional)</Label>
+                                <Textarea
+                                    maxLength={200}
+                                    placeholder={formValues.schedule_is_show ? "Ex: Show na praça central, banda X" : "Detalhes do agendamento"}
+                                    value={formValues.schedule_notes || ""}
+                                    onChange={(e) => setFormValues({...formValues, schedule_notes: e.target.value})}
+                                />
+                            </div>
+                        </div>
+                    )}
+
                     {type === 'contract_expiring' && (
                         <div className="space-y-4">
                             <div className="space-y-2">
