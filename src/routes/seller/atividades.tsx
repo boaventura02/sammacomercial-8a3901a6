@@ -46,7 +46,7 @@ export const Route = createFileRoute('/seller/atividades')({
   component: ActivityPage,
 });
 
-type ActivityType = 'visit' | 'call' | 'negotiation' | 'contract_expiring' | 'new_company' | 'other';
+type ActivityType = 'visit' | 'call' | 'negotiation' | 'contract_expiring' | 'new_company' | 'schedule' | 'other';
 
 interface ActivityTypeConfig {
   id: ActivityType;
@@ -59,10 +59,20 @@ const ACTIVITY_TYPES: ActivityTypeConfig[] = [
   { id: 'visit', icon: Building2, label: 'Visita Presencial', description: 'Fui até a empresa' },
   { id: 'call', icon: Phone, label: 'Ligação', description: 'Contatei por telefone' },
   { id: 'negotiation', icon: Handshake, label: 'Negociação', description: 'Avancei em uma proposta' },
+  { id: 'schedule', icon: CalendarClock, label: 'Agendamento', description: 'Agendei visita, reunião ou show' },
   { id: 'new_company', icon: Plus, label: 'Nova Empresa', description: 'Encontrei empresa para cadastrar' },
   { id: 'contract_expiring', icon: AlertTriangle, label: 'Contrato Vencendo', description: 'Tratei de contrato próximo do fim' },
   { id: 'other', icon: MessageSquare, label: 'Outra Atividade', description: 'Algo fora do padrão' },
 ];
+
+// Helpers to encode/decode schedule data into other_description (no schema change)
+function encodeSchedule(data: { date: string; isShow: boolean; notes?: string }) {
+  return `__SCHEDULE__${JSON.stringify(data)}`;
+}
+function decodeSchedule(raw?: string | null): { date: string; isShow: boolean; notes?: string } | null {
+  if (!raw || !raw.startsWith('__SCHEDULE__')) return null;
+  try { return JSON.parse(raw.slice('__SCHEDULE__'.length)); } catch { return null; }
+}
 
 function ActivityPage() {
   const { profile } = useAuth();
