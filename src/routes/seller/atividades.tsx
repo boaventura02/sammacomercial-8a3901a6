@@ -20,7 +20,10 @@ import {
   ChevronRight,
   Camera,
   Calendar,
-  Search
+  Search,
+  Music,
+  CalendarClock,
+  Sparkles
 } from 'lucide-react';
 import { useState, useMemo } from 'react';
 import { 
@@ -43,7 +46,7 @@ export const Route = createFileRoute('/seller/atividades')({
   component: ActivityPage,
 });
 
-type ActivityType = 'visit' | 'call' | 'negotiation' | 'contract_expiring' | 'new_company' | 'other';
+type ActivityType = 'visit' | 'call' | 'negotiation' | 'contract_expiring' | 'new_company' | 'schedule' | 'other';
 
 interface ActivityTypeConfig {
   id: ActivityType;
@@ -56,10 +59,20 @@ const ACTIVITY_TYPES: ActivityTypeConfig[] = [
   { id: 'visit', icon: Building2, label: 'Visita Presencial', description: 'Fui até a empresa' },
   { id: 'call', icon: Phone, label: 'Ligação', description: 'Contatei por telefone' },
   { id: 'negotiation', icon: Handshake, label: 'Negociação', description: 'Avancei em uma proposta' },
+  { id: 'schedule', icon: CalendarClock, label: 'Agendamento', description: 'Agendei visita, reunião ou show' },
   { id: 'new_company', icon: Plus, label: 'Nova Empresa', description: 'Encontrei empresa para cadastrar' },
   { id: 'contract_expiring', icon: AlertTriangle, label: 'Contrato Vencendo', description: 'Tratei de contrato próximo do fim' },
   { id: 'other', icon: MessageSquare, label: 'Outra Atividade', description: 'Algo fora do padrão' },
 ];
+
+// Helpers to encode/decode schedule data into other_description (no schema change)
+function encodeSchedule(data: { date: string; isShow: boolean; notes?: string }) {
+  return `__SCHEDULE__${JSON.stringify(data)}`;
+}
+function decodeSchedule(raw?: string | null): { date: string; isShow: boolean; notes?: string } | null {
+  if (!raw || !raw.startsWith('__SCHEDULE__')) return null;
+  try { return JSON.parse(raw.slice('__SCHEDULE__'.length)); } catch { return null; }
+}
 
 function ActivityPage() {
   const { profile } = useAuth();
@@ -152,6 +165,15 @@ function ActivityPage() {
           companyId = newCompany.id;
         }
 
+        const scheduleData =
+          type === 'schedule'
+            ? encodeSchedule({
+                date: formValues.schedule_date,
+                isShow: !!formValues.schedule_is_show,
+                notes: formValues.schedule_notes,
+              })
+            : undefined;
+
         const { error: itemError } = await supabase
             .from('activity_items')
             .insert([{
@@ -160,7 +182,7 @@ function ActivityPage() {
                 company_id: companyId,
                 negotiation_status: formValues[`${type}_status`],
                 contract_status: formValues[`${type}_contract_status`],
-                other_description: formValues.other_description
+                other_description: type === 'schedule' ? scheduleData : formValues.other_description
             }]);
         
         if (itemError) throw itemError;
@@ -212,6 +234,10 @@ function ActivityPage() {
             if (!formValues.contract_expiring_contract_status) return false;
         }
         if (type === 'other' && !formValues.other_description) return false;
+        if (type === 'schedule') {
+            if (!formValues.schedule_company_id) return false;
+            if (!formValues.schedule_date) return false;
+        }
         if (type === 'new_company') {
             if (!formValues.new_company_name) return false;
             if (!formValues.new_company_contract_end_date) return false;
@@ -272,15 +298,31 @@ function ActivityPage() {
                 </div>
                 
                 <div className="space-y-3">
-                  {(activity.activity_items as any[])?.sort((a: any, b: any) => a.type === 'new_company' ? 1 : -1).map((item: any) => (
-                    <div key={item.id} className="flex flex-col gap-1 p-2 rounded-lg bg-background/40">
+                  {(activity.activity_items as any[])?.sort((a: any, b: any) => a.type === 'new_company' ? 1 : -1).map((item: any) => {
+                    const schedule = item.type === 'schedule' ? decodeSchedule(item.other_description) : null;
+                    const isShow = schedule?.isShow;
+                    return (
+                    <div
+                      key={item.id}
+                      className={cn(
+                        "flex flex-col gap-1 p-2 rounded-lg",
+                        isShow
+                          ? "bg-fuchsia-500/10 border-2 border-fuchsia-500/60 shadow-[0_0_20px_-8px_rgba(217,70,239,0.5)]"
+                          : schedule
+                            ? "bg-blue-500/10 border border-blue-500/40"
+                            : "bg-background/40"
+                      )}
+                    >
                       <div className="flex items-center gap-2 text-sm font-medium">
                         {(() => {
+                          if (isShow) return <Sparkles className="w-4 h-4 text-fuchsia-400" />;
                           const config = ACTIVITY_TYPES.find(t => t.id === item.type);
                           const Icon = config?.icon;
-                          return Icon ? <Icon className="w-4 h-4 text-primary" /> : null;
+                          return Icon ? <Icon className={cn("w-4 h-4", schedule ? "text-blue-400" : "text-primary")} /> : null;
                         })()}
-                        <span className="capitalize">{ACTIVITY_TYPES.find(t => t.id === item.type)?.label || item.type}</span>
+                        <span className={cn("capitalize", isShow && "text-fuchsia-300 font-semibold")}>
+                          {isShow ? '🎤 SHOW' : ACTIVITY_TYPES.find(t => t.id === item.type)?.label || item.type}
+                        </span>
                         {item.company_id && (
                           <span className="text-muted-foreground">→ {companies?.find((c: any) => c.id === item.company_id)?.name || 'Empresa'}</span>
                         )}
@@ -288,11 +330,22 @@ function ActivityPage() {
                       {item.negotiation_status && (
                         <p className="text-xs text-muted-foreground ml-6 italic">Status: {item.negotiation_status}</p>
                       )}
-                      {item.other_description && (
+                      {schedule && (
+                        <>
+                          <p className={cn("text-xs ml-6", isShow ? "text-fuchsia-200" : "text-blue-200")}>
+                            📅 {format(new Date(schedule.date), "dd/MM/yyyy 'às' HH:mm")}
+                          </p>
+                          {schedule.notes && (
+                            <p className="text-xs text-muted-foreground ml-6">{schedule.notes}</p>
+                          )}
+                        </>
+                      )}
+                      {!schedule && item.other_description && (
                         <p className="text-xs text-muted-foreground ml-6">{item.other_description}</p>
                       )}
                     </div>
-                  ))}
+                    );
+                  })}
                 </div>
 
                 {activity.general_notes && (
@@ -412,6 +465,57 @@ function ActivityPage() {
                                         {s}
                                     </button>
                                 ))}
+                            </div>
+                        </div>
+                    )}
+
+                    {type === 'schedule' && (
+                        <div className="space-y-4">
+                            <div className="space-y-2">
+                                <Label>Qual empresa?</Label>
+                                <select
+                                    className="w-full h-10 px-3 rounded-md border border-input bg-background"
+                                    value={formValues.schedule_company_id || ""}
+                                    onChange={(e) => setFormValues({...formValues, schedule_company_id: e.target.value})}
+                                >
+                                    <option value="">Selecione uma empresa</option>
+                                    {companies?.map((c: any) => <option key={c.id} value={c.id}>{c.name}</option>)}
+                                </select>
+                            </div>
+                            <div className="space-y-2">
+                                <Label>Data e hora do agendamento *</Label>
+                                <Input
+                                    type="datetime-local"
+                                    value={formValues.schedule_date || ""}
+                                    onChange={(e) => setFormValues({...formValues, schedule_date: e.target.value})}
+                                />
+                            </div>
+                            <div className={cn(
+                                "flex items-center justify-between p-3 rounded-lg border-2 transition-all",
+                                formValues.schedule_is_show
+                                    ? "border-fuchsia-500 bg-fuchsia-500/10"
+                                    : "border-border bg-background"
+                            )}>
+                                <div className="flex items-center gap-2">
+                                    <Music className={cn("w-5 h-5", formValues.schedule_is_show ? "text-fuchsia-500" : "text-muted-foreground")} />
+                                    <div>
+                                        <Label className="cursor-pointer">É um Show?</Label>
+                                        <p className="text-[11px] text-muted-foreground">Shows ficam destacados na agenda</p>
+                                    </div>
+                                </div>
+                                <Switch
+                                    checked={!!formValues.schedule_is_show}
+                                    onCheckedChange={(checked) => setFormValues({...formValues, schedule_is_show: checked})}
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <Label>Observações (opcional)</Label>
+                                <Textarea
+                                    maxLength={200}
+                                    placeholder={formValues.schedule_is_show ? "Ex: Show na praça central, banda X" : "Detalhes do agendamento"}
+                                    value={formValues.schedule_notes || ""}
+                                    onChange={(e) => setFormValues({...formValues, schedule_notes: e.target.value})}
+                                />
                             </div>
                         </div>
                     )}
@@ -566,6 +670,21 @@ function ActivityPage() {
                                         )}
                                         {type === 'other' && (
                                             <p className="text-sm ml-2">→ Descrição: {formValues.other_description}</p>
+                                        )}
+                                        {type === 'schedule' && (
+                                            <div className={cn(
+                                                "ml-2 mt-1 p-2 rounded-md",
+                                                formValues.schedule_is_show && "bg-fuchsia-500/10 border border-fuchsia-500/50"
+                                            )}>
+                                                {formValues.schedule_is_show && (
+                                                    <p className="text-sm font-semibold text-fuchsia-300 flex items-center gap-1">
+                                                        <Sparkles className="w-3 h-3" /> SHOW
+                                                    </p>
+                                                )}
+                                                <p className="text-sm">→ Empresa: {companies?.find((c: any) => c.id === formValues.schedule_company_id)?.name}</p>
+                                                <p className="text-sm">→ Quando: {formValues.schedule_date && format(new Date(formValues.schedule_date), "dd/MM/yyyy 'às' HH:mm")}</p>
+                                                {formValues.schedule_notes && <p className="text-sm">→ Obs: {formValues.schedule_notes}</p>}
+                                            </div>
                                         )}
                                     </div>
                                 ))}
