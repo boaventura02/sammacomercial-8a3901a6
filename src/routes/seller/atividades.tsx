@@ -346,7 +346,6 @@ function ActivityPage() {
                     </div>
                     );
                   })}
-                  ))}
                 </div>
 
                 {activity.general_notes && (
