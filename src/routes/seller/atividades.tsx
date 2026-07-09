@@ -234,6 +234,10 @@ function ActivityPage() {
             if (!formValues.contract_expiring_contract_status) return false;
         }
         if (type === 'other' && !formValues.other_description) return false;
+        if (type === 'schedule') {
+            if (!formValues.schedule_company_id) return false;
+            if (!formValues.schedule_date) return false;
+        }
         if (type === 'new_company') {
             if (!formValues.new_company_name) return false;
             if (!formValues.new_company_contract_end_date) return false;
