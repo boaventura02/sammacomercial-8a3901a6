@@ -39,6 +39,7 @@ export function Sidebar({ role, name }: SidebarProps) {
     { label: "Minha Cidade", icon: Map, href: "/seller/dashboard" },
     { label: "Empresas", icon: Building2, href: "/seller/empresas" },
     { label: "Atividades", icon: ClipboardList, href: "/seller/atividades" },
+    { label: "Agenda", icon: Calendar, href: "/seller/agenda" },
     { label: "Alertas", icon: AlertTriangle, href: "/seller/alertas" },
   ];
 

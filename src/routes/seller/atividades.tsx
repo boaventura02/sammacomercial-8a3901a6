@@ -87,6 +87,9 @@ function ActivityPage() {
   const [formValues, setFormValues] = useState<Record<string, any>>({});
   const [generalNotes, setGeneralNotes] = useState("");
   const [photo, setPhoto] = useState<string | null>(null);
+  const [activityMode, setActivityMode] = useState<'done' | 'planned'>('done');
+  const [plannedDate, setPlannedDate] = useState(new Date().toISOString().split('T')[0]);
+  const [customDate, setCustomDate] = useState(new Date().toISOString().split('T')[0]);
 
   const { data: companies } = useQuery({
     queryKey: ['seller-companies', profile?.id],

@@ -216,11 +216,13 @@ export type Database = {
           city_id: string
           created_at: string
           description: string
+          due_date: string | null
           general_notes: string | null
           id: string
           location: string | null
           photo_url: string | null
           seller_id: string
+          status: string
         }
         Insert: {
           activity_date?: string
@@ -228,11 +230,13 @@ export type Database = {
           city_id: string
           created_at?: string
           description: string
+          due_date?: string | null
           general_notes?: string | null
           id?: string
           location?: string | null
           photo_url?: string | null
           seller_id: string
+          status?: string
         }
         Update: {
           activity_date?: string
@@ -240,11 +244,13 @@ export type Database = {
           city_id?: string
           created_at?: string
           description?: string
+          due_date?: string | null
           general_notes?: string | null
           id?: string
           location?: string | null
           photo_url?: string | null
           seller_id?: string
+          status?: string
         }
         Relationships: [
           {
