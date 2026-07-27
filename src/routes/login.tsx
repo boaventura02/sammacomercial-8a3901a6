@@ -346,7 +346,10 @@ function Login() {
                 type="submit"
                 disabled={loading}
                 className="w-full h-12 bg-primary text-primary-foreground hover:bg-primary/90 font-bold text-sm tracking-widest transition-all shadow-lg shadow-primary/20 group overflow-hidden"
-              ) : (
+              >
+                {loading ? (
+                  <Loader2 className="w-5 h-5 animate-spin mr-2" />
+                ) : (
                 <span className="flex items-center">
                   {isSignUp ? 'FINALIZAR CADASTRO' : 'ACESSAR PLATAFORMA'}
                   <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
