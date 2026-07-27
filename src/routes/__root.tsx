@@ -65,6 +65,15 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { title: "SAMMA - Gestão de Vendas" },
+      { property: "og:title", content: "SAMMA - Gestão de Vendas" },
+      { name: "twitter:title", content: "SAMMA - Gestão de Vendas" },
+      { name: "description", content: "SAMMA is a full-stack sales team management web application." },
+      { property: "og:description", content: "SAMMA is a full-stack sales team management web application." },
+      { name: "twitter:description", content: "SAMMA is a full-stack sales team management web application." },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/fe0a1c1d-eecd-4de5-9aab-e31249e2a6c8/id-preview-79c5190b--45e335e4-e39b-4350-9da6-e625a7e96432.lovable.app-1783623622107.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/fe0a1c1d-eecd-4de5-9aab-e31249e2a6c8/id-preview-79c5190b--45e335e4-e39b-4350-9da6-e625a7e96432.lovable.app-1783623622107.png" },
+      { name: "twitter:card", content: "summary_large_image" },
+      { property: "og:type", content: "website" },
     ],
     links: [
       {
