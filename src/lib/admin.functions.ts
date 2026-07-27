@@ -217,3 +217,93 @@ export const getCitySellers = createServerFn({ method: "GET" })
     if (sellersError) throw sellersError;
     return sellers;
   });
+
+export const getAdminActivities = createServerFn({ method: "GET" })
+  .validator((filters: { cityId?: string; sellerId?: string; period?: 'today' | '7d' | '30d' | 'all' }) => filters)
+  .handler(async ({ data: filters }) => {
+    let query = supabase
+      .from('daily_activities')
+      .select(`
+        *,
+        profiles(name, city_id, cities(name)),
+        activity_items(
+          *,
+          companies(name)
+        )
+      `)
+      .order('activity_date', { ascending: false });
+
+    if (filters.cityId) {
+      query = query.eq('city_id', filters.cityId);
+    }
+    if (filters.sellerId) {
+      query = query.eq('seller_id', filters.sellerId);
+    }
+
+    const now = new Date();
+    if (filters.period === 'today') {
+      const startOfDay = new Date(now.setHours(0, 0, 0, 0)).toISOString();
+      query = query.gte('activity_date', startOfDay);
+    } else if (filters.period === '7d') {
+      const sevenDaysAgo = subDays(new Date(), 7).toISOString();
+      query = query.gte('activity_date', sevenDaysAgo);
+    } else if (filters.period === '30d') {
+      const thirtyDaysAgo = subDays(new Date(), 30).toISOString();
+      query = query.gte('activity_date', thirtyDaysAgo);
+    }
+
+    const { data, error } = await query;
+    if (error) throw error;
+    return data;
+  });
+
+export const getAdminAlerts = createServerFn({ method: "GET" }).handler(async () => {
+  const thirtyDaysFromNow = new Date();
+  thirtyDaysFromNow.setDate(thirtyDaysFromNow.getDate() + 30);
+  
+  // 1. Expiring contracts
+  const { data: expiringContracts, error: contractsError } = await supabase
+    .from('companies')
+    .select('*, profiles(name), cities(name)')
+    .neq('samma_status', 'already_client')
+    .not('contract_end_date', 'is', null)
+    .lte('contract_end_date', thirtyDaysFromNow.toISOString())
+    .order('contract_end_date', { ascending: true });
+
+  if (contractsError) throw contractsError;
+
+  // 2. Inactive sellers (no activity in last 3 days)
+  const threeDaysAgo = subDays(new Date(), 3).toISOString();
+  
+  const { data: allSellers, error: sellersError } = await supabase
+    .from('profiles')
+    .select('id, name, cities(name)')
+    .eq('role', 'seller');
+
+  if (sellersError) throw sellersError;
+
+  const { data: recentActivities, error: activitiesError } = await supabase
+    .from('daily_activities')
+    .select('seller_id')
+    .gte('activity_date', threeDaysAgo);
+
+  if (activitiesError) throw activitiesError;
+
+  const activeSellerIds = new Set(recentActivities.map(a => a.seller_id));
+  const inactiveSellers = allSellers.filter(s => !activeSellerIds.has(s.id));
+
+  return {
+    expiringContracts,
+    inactiveSellers
+  };
+});
+
+export const getFilterOptions = createServerFn({ method: "GET" }).handler(async () => {
+  const { data: cities } = await supabase.from('cities').select('id, name');
+  const { data: sellers } = await supabase.from('profiles').select('id, name').eq('role', 'seller');
+  
+  return {
+    cities: cities || [],
+    sellers: sellers || []
+  };
+});
