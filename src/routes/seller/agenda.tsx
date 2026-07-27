@@ -361,7 +361,7 @@ function AgendaPage() {
           
           <div className="absolute bottom-6 left-6 right-6">
             <Button className="w-full h-12 text-sm font-bold shadow-xl shadow-primary/20" asChild>
-              <Link to="/seller/atividades">
+              <Link to="/seller/atividades" className="flex items-center">
                 <Plus className="w-4 h-4 mr-2" />
                 Nova Atividade
               </Link>
