@@ -87,6 +87,9 @@ function ActivityPage() {
   const [formValues, setFormValues] = useState<Record<string, any>>({});
   const [generalNotes, setGeneralNotes] = useState("");
   const [photo, setPhoto] = useState<string | null>(null);
+  const [activityMode, setActivityMode] = useState<'done' | 'planned'>('done');
+  const [plannedDate, setPlannedDate] = useState(new Date().toISOString().split('T')[0]);
+  const [customDate, setCustomDate] = useState(new Date().toISOString().split('T')[0]);
 
   const { data: companies } = useQuery({
     queryKey: ['seller-companies', profile?.id],
@@ -130,7 +133,9 @@ function ActivityPage() {
         .insert([{
           seller_id: profile.id,
           city_id: profile.city_id,
-          activity_date: new Date().toISOString().split('T')[0],
+          activity_date: activityMode === 'done' ? customDate : plannedDate,
+          due_date: activityMode === 'planned' ? plannedDate : null,
+          status: activityMode,
           general_notes: generalNotes,
           photo_url: photo,
           activity_types: selectedTypes as string[],
@@ -471,6 +476,53 @@ function ActivityPage() {
 
             {step === 2 && (
               <div className="space-y-6 animate-in slide-in-from-right-4 duration-300">
+                {/* Activity Timing Toggle */}
+                <div className="grid grid-cols-2 gap-2 p-1 bg-muted rounded-xl">
+                  <Button
+                    type="button"
+                    variant={activityMode === 'done' ? 'default' : 'ghost'}
+                    onClick={() => setActivityMode('done')}
+                    className="rounded-lg h-9 text-xs"
+                  >
+                    <Check className="w-3.5 h-3.5 mr-2" />
+                    Já fiz
+                  </Button>
+                  <Button
+                    type="button"
+                    variant={activityMode === 'planned' ? 'default' : 'ghost'}
+                    onClick={() => setActivityMode('planned')}
+                    className="rounded-lg h-9 text-xs"
+                  >
+                    <CalendarClock className="w-3.5 h-3.5 mr-2" />
+                    Vou fazer
+                  </Button>
+                </div>
+
+                <div className="space-y-4">
+                  {activityMode === 'done' ? (
+                    <div className="space-y-2">
+                      <Label className="text-xs">Data da Atividade</Label>
+                      <Input 
+                        type="date" 
+                        value={customDate} 
+                        onChange={(e) => setCustomDate(e.target.value)}
+                        className="h-9"
+                      />
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      <Label className="text-xs">Data Planejada</Label>
+                      <Input 
+                        type="date" 
+                        min={new Date().toISOString().split('T')[0]}
+                        value={plannedDate} 
+                        onChange={(e) => setPlannedDate(e.target.value)}
+                        className="h-9"
+                      />
+                    </div>
+                  )}
+                </div>
+
                 <div className="text-center">
                   <h2 className="text-xl font-bold">Me conte mais</h2>
                 </div>

@@ -8,7 +8,8 @@ import {
   Building2, 
   LogOut,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  Calendar
 } from "lucide-react";
 import { Link, useRouter } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
@@ -39,6 +40,7 @@ export function Sidebar({ role, name }: SidebarProps) {
     { label: "Minha Cidade", icon: Map, href: "/seller/dashboard" },
     { label: "Empresas", icon: Building2, href: "/seller/empresas" },
     { label: "Atividades", icon: ClipboardList, href: "/seller/atividades" },
+    { label: "Agenda", icon: Calendar, href: "/seller/agenda" },
     { label: "Alertas", icon: AlertTriangle, href: "/seller/alertas" },
   ];
 
