@@ -8,7 +8,8 @@ import {
   Building2, 
   LogOut,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  Calendar
 } from "lucide-react";
 import { Link, useRouter } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";

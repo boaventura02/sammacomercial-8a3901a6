@@ -133,7 +133,9 @@ function ActivityPage() {
         .insert([{
           seller_id: profile.id,
           city_id: profile.city_id,
-          activity_date: new Date().toISOString().split('T')[0],
+          activity_date: activityMode === 'done' ? customDate : plannedDate,
+          due_date: activityMode === 'planned' ? plannedDate : null,
+          status: activityMode,
           general_notes: generalNotes,
           photo_url: photo,
           activity_types: selectedTypes as string[],
