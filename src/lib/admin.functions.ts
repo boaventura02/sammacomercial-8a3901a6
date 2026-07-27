@@ -3,7 +3,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { subDays } from "date-fns";
 
 export const getAdminStats = createServerFn({ method: "GET" }).handler(async () => {
-  // 1. Total cities with at least one seller
   const { data: activeCitiesData, error: activeCitiesError } = await supabase
     .from('profiles')
     .select('city_id')
@@ -13,14 +12,12 @@ export const getAdminStats = createServerFn({ method: "GET" }).handler(async () 
   if (activeCitiesError) throw activeCitiesError;
   const activeCitiesCount = new Set(activeCitiesData.map(p => p.city_id)).size;
 
-  // 2. Total companies
   const { count: totalCompanies, error: companiesCountError } = await supabase
     .from('companies')
     .select('*', { count: 'exact', head: true });
 
   if (companiesCountError) throw companiesCountError;
 
-  // 3. Total served companies
   const { count: servedCompanies, error: servedCompaniesError } = await supabase
     .from('companies')
     .select('*', { count: 'exact', head: true })
@@ -30,7 +27,6 @@ export const getAdminStats = createServerFn({ method: "GET" }).handler(async () 
 
   const attendanceRate = totalCompanies ? (servedCompanies! / totalCompanies!) * 100 : 0;
 
-  // 4. Companies by city for chart
   const { data: cityData, error: cityError } = await supabase
     .from('companies')
     .select('city_id, samma_status, won_by_seller, cities(name)');
@@ -51,7 +47,6 @@ export const getAdminStats = createServerFn({ method: "GET" }).handler(async () 
 
   const chartData = Object.values(cityMap).sort((a, b) => b.total - a.total).slice(0, 10);
 
-  // 5. Sellers list with stats
   const sevenDaysAgo = subDays(new Date(), 7).toISOString();
   
   const { data: sellers, error: sellersError } = await supabase
@@ -67,7 +62,6 @@ export const getAdminStats = createServerFn({ method: "GET" }).handler(async () 
 
   if (sellersError) throw sellersError;
 
-  // For the activity count in last 7 days, we need a separate query or better aggregation
   const { data: recentActivities, error: activitiesError } = await supabase
     .from('daily_activities')
     .select('seller_id')
@@ -99,3 +93,127 @@ export const getAdminStats = createServerFn({ method: "GET" }).handler(async () 
     sellersList
   };
 });
+
+export const getCitiesAdminData = createServerFn({ method: "GET" }).handler(async () => {
+  const { data: cities, error: citiesError } = await supabase
+    .from('cities')
+    .select(`
+      id,
+      name,
+      profiles(id, role),
+      companies(id, samma_status, won_by_seller)
+    `);
+
+  if (citiesError) throw citiesError;
+
+  return cities.map(city => {
+    const sellersCount = city.profiles.filter(p => p.role === 'seller').length;
+    const totalCompanies = city.companies.length;
+    const servedCompanies = city.companies.filter(c => c.samma_status === 'already_client' || c.won_by_seller).length;
+    const coverage = totalCompanies ? (servedCompanies / totalCompanies) * 100 : 0;
+
+    return {
+      id: city.id,
+      name: city.name,
+      sellersCount,
+      totalCompanies,
+      servedCompanies,
+      coverage: Math.round(coverage)
+    };
+  }).sort((a, b) => b.totalCompanies - a.totalCompanies);
+});
+
+export const getSellersAdminData = createServerFn({ method: "GET" }).handler(async () => {
+  const sevenDaysAgo = subDays(new Date(), 7).toISOString();
+  
+  const { data: sellers, error: sellersError } = await supabase
+    .from('profiles')
+    .select(`
+      id,
+      name,
+      role,
+      city_id,
+      cities(name),
+      companies(count),
+      daily_activities(
+        id,
+        activity_date,
+        description,
+        activity_types,
+        activity_items(
+          id,
+          type,
+          other_description
+        )
+      )
+    `)
+    .eq('role', 'seller');
+
+  if (sellersError) throw sellersError;
+
+  const sellersWithStats = sellers.map(seller => {
+    const recentActivities = seller.daily_activities.filter(a => a.activity_date >= sevenDaysAgo);
+    const lastActivity = seller.daily_activities.length > 0 
+      ? seller.daily_activities.sort((a, b) => new Date(b.activity_date).getTime() - new Date(a.activity_date).getTime())[0].activity_date
+      : null;
+
+    return {
+      id: seller.id,
+      name: seller.name,
+      city: (seller as any).cities?.name || 'N/A',
+      cityId: seller.city_id,
+      companiesCount: (seller as any).companies?.[0]?.count || 0,
+      recentActivitiesCount: recentActivities.length,
+      lastActivityDate: lastActivity
+    };
+  }).sort((a, b) => b.recentActivitiesCount - a.recentActivitiesCount);
+
+  return sellersWithStats;
+});
+
+export const getSellerDetails = createServerFn({ method: "GET" })
+  .input((id: string) => id)
+  .handler(async ({ input: id }) => {
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('name')
+      .eq('id', id)
+      .single();
+
+    if (profileError) throw profileError;
+
+    const { data: companies, error: companiesError } = await supabase
+      .from('companies')
+      .select('*')
+      .eq('seller_id', id);
+
+    if (companiesError) throw companiesError;
+
+    const { data: activities, error: activitiesError } = await supabase
+      .from('daily_activities')
+      .select('*, activity_items(*)')
+      .eq('seller_id', id)
+      .order('activity_date', { ascending: false })
+      .limit(10);
+
+    if (activitiesError) throw activitiesError;
+
+    return {
+      name: profile.name,
+      companies,
+      activities
+    };
+  });
+
+export const getCitySellers = createServerFn({ method: "GET" })
+  .input((cityId: string) => cityId)
+  .handler(async ({ input: cityId }) => {
+    const { data: sellers, error: sellersError } = await supabase
+      .from('profiles')
+      .select('id, name')
+      .eq('city_id', cityId)
+      .eq('role', 'seller');
+
+    if (sellersError) throw sellersError;
+    return sellers;
+  });
