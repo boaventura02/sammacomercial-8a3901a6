@@ -22,7 +22,7 @@ function AdminCities() {
 
   const { data: citySellers, isLoading: isLoadingSellers } = useQuery({
     queryKey: ['city-sellers', selectedCity?.id],
-    queryFn: () => getCitySellers(selectedCity!.id),
+    queryFn: () => getCitySellers({ data: selectedCity!.id }),
     enabled: !!selectedCity,
   });
 

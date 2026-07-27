@@ -25,7 +25,7 @@ function AdminSellers() {
 
   const { data: sellerDetails, isLoading: isLoadingDetails } = useQuery({
     queryKey: ['seller-details', selectedSellerId],
-    queryFn: () => getSellerDetails(selectedSellerId!),
+    queryFn: () => getSellerDetails({ data: selectedSellerId! }),
     enabled: !!selectedSellerId,
   });
 
