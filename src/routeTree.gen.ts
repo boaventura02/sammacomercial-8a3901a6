@@ -19,6 +19,8 @@ import { Route as SellerAtividadesRouteImport } from './routes/seller/atividades
 import { Route as AdminVendedoresRouteImport } from './routes/admin/vendedores'
 import { Route as AdminDashboardRouteImport } from './routes/admin/dashboard'
 import { Route as AdminCidadesRouteImport } from './routes/admin/cidades'
+import { Route as AdminAtividadesRouteImport } from './routes/admin/atividades'
+import { Route as AdminAlertasRouteImport } from './routes/admin/alertas'
 
 const SellerRoute = SellerRouteImport.update({
   id: '/seller',
@@ -70,12 +72,24 @@ const AdminCidadesRoute = AdminCidadesRouteImport.update({
   path: '/cidades',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminAtividadesRoute = AdminAtividadesRouteImport.update({
+  id: '/atividades',
+  path: '/atividades',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminAlertasRoute = AdminAlertasRouteImport.update({
+  id: '/alertas',
+  path: '/alertas',
+  getParentRoute: () => AdminRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
   '/login': typeof LoginRoute
   '/seller': typeof SellerRouteWithChildren
+  '/admin/alertas': typeof AdminAlertasRoute
+  '/admin/atividades': typeof AdminAtividadesRoute
   '/admin/cidades': typeof AdminCidadesRoute
   '/admin/dashboard': typeof AdminDashboardRoute
   '/admin/vendedores': typeof AdminVendedoresRoute
@@ -88,6 +102,8 @@ export interface FileRoutesByTo {
   '/admin': typeof AdminRouteWithChildren
   '/login': typeof LoginRoute
   '/seller': typeof SellerRouteWithChildren
+  '/admin/alertas': typeof AdminAlertasRoute
+  '/admin/atividades': typeof AdminAtividadesRoute
   '/admin/cidades': typeof AdminCidadesRoute
   '/admin/dashboard': typeof AdminDashboardRoute
   '/admin/vendedores': typeof AdminVendedoresRoute
@@ -101,6 +117,8 @@ export interface FileRoutesById {
   '/admin': typeof AdminRouteWithChildren
   '/login': typeof LoginRoute
   '/seller': typeof SellerRouteWithChildren
+  '/admin/alertas': typeof AdminAlertasRoute
+  '/admin/atividades': typeof AdminAtividadesRoute
   '/admin/cidades': typeof AdminCidadesRoute
   '/admin/dashboard': typeof AdminDashboardRoute
   '/admin/vendedores': typeof AdminVendedoresRoute
@@ -115,6 +133,8 @@ export interface FileRouteTypes {
     | '/admin'
     | '/login'
     | '/seller'
+    | '/admin/alertas'
+    | '/admin/atividades'
     | '/admin/cidades'
     | '/admin/dashboard'
     | '/admin/vendedores'
@@ -127,6 +147,8 @@ export interface FileRouteTypes {
     | '/admin'
     | '/login'
     | '/seller'
+    | '/admin/alertas'
+    | '/admin/atividades'
     | '/admin/cidades'
     | '/admin/dashboard'
     | '/admin/vendedores'
@@ -139,6 +161,8 @@ export interface FileRouteTypes {
     | '/admin'
     | '/login'
     | '/seller'
+    | '/admin/alertas'
+    | '/admin/atividades'
     | '/admin/cidades'
     | '/admin/dashboard'
     | '/admin/vendedores'
@@ -226,16 +250,34 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminCidadesRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/atividades': {
+      id: '/admin/atividades'
+      path: '/atividades'
+      fullPath: '/admin/atividades'
+      preLoaderRoute: typeof AdminAtividadesRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/alertas': {
+      id: '/admin/alertas'
+      path: '/alertas'
+      fullPath: '/admin/alertas'
+      preLoaderRoute: typeof AdminAlertasRouteImport
+      parentRoute: typeof AdminRoute
+    }
   }
 }
 
 interface AdminRouteChildren {
+  AdminAlertasRoute: typeof AdminAlertasRoute
+  AdminAtividadesRoute: typeof AdminAtividadesRoute
   AdminCidadesRoute: typeof AdminCidadesRoute
   AdminDashboardRoute: typeof AdminDashboardRoute
   AdminVendedoresRoute: typeof AdminVendedoresRoute
 }
 
 const AdminRouteChildren: AdminRouteChildren = {
+  AdminAlertasRoute: AdminAlertasRoute,
+  AdminAtividadesRoute: AdminAtividadesRoute,
   AdminCidadesRoute: AdminCidadesRoute,
   AdminDashboardRoute: AdminDashboardRoute,
   AdminVendedoresRoute: AdminVendedoresRoute,
