@@ -354,7 +354,7 @@ function Login() {
                   {isSignUp ? 'FINALIZAR CADASTRO' : 'ACESSAR PLATAFORMA'}
                   <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
                 </span>
-              )}
+                )}
               </Button>
               
               <div className="relative py-4">
