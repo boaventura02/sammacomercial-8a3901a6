@@ -172,8 +172,8 @@ export const getSellersAdminData = createServerFn({ method: "GET" }).handler(asy
 });
 
 export const getSellerDetails = createServerFn({ method: "GET" })
-  .input((id: string) => id)
-  .handler(async ({ input: id }) => {
+  .validator((id: string) => id)
+  .handler(async ({ data: id }) => {
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
       .select('name')
@@ -206,8 +206,8 @@ export const getSellerDetails = createServerFn({ method: "GET" })
   });
 
 export const getCitySellers = createServerFn({ method: "GET" })
-  .input((cityId: string) => cityId)
-  .handler(async ({ input: cityId }) => {
+  .validator((cityId: string) => cityId)
+  .handler(async ({ data: cityId }) => {
     const { data: sellers, error: sellersError } = await supabase
       .from('profiles')
       .select('id, name')

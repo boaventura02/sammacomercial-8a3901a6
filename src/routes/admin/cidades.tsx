@@ -115,7 +115,7 @@ function AdminCities() {
                 <Loader2 className="h-6 w-6 animate-spin text-primary" />
               </div>
             ) : citySellers && citySellers.length > 0 ? (
-              citySellers.map((seller) => (
+              citySellers.map((seller: any) => (
                 <div key={seller.id} className="flex items-center gap-4 p-4 rounded-xl bg-white/5 border border-white/10 hover:border-primary/30 transition-colors">
                   <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold">
                     {seller.name.charAt(0)}
