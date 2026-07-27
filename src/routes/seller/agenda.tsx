@@ -1,4 +1,4 @@
-import { createFileRoute } from '@tanstack/react-router';
+import { createFileRoute, Link } from '@tanstack/react-router';
 import { useAuth } from '@/contexts/AuthContext';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -65,15 +65,22 @@ function AgendaPage() {
   const { data: activities, isLoading } = useQuery({
     queryKey: ['seller-agenda', profile?.id, format(currentMonth, 'yyyy-MM')],
     queryFn: () => fetchAgenda({ 
-      sellerId: profile?.id || '', 
-      month: currentMonth.toISOString() 
+      data: {
+        sellerId: profile?.id || '', 
+        month: currentMonth.toISOString() 
+      }
     }),
     enabled: !!profile?.id,
   });
 
   const mutation = useMutation({
     mutationFn: (vars: { id: string; status: 'planned' | 'done' }) => 
-      updateStatus({ activityId: vars.id, status: vars.status }),
+      updateStatus({ 
+        data: {
+          activityId: vars.id, 
+          status: vars.status 
+        }
+      }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['seller-agenda'] });
       toast({ title: "Status atualizado! ✅" });

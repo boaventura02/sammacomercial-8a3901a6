@@ -16,6 +16,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as SellerEmpresasRouteImport } from './routes/seller/empresas'
 import { Route as SellerDashboardRouteImport } from './routes/seller/dashboard'
 import { Route as SellerAtividadesRouteImport } from './routes/seller/atividades'
+import { Route as SellerAgendaRouteImport } from './routes/seller/agenda'
 import { Route as AdminVendedoresRouteImport } from './routes/admin/vendedores'
 import { Route as AdminDashboardRouteImport } from './routes/admin/dashboard'
 import { Route as AdminCidadesRouteImport } from './routes/admin/cidades'
@@ -57,6 +58,11 @@ const SellerAtividadesRoute = SellerAtividadesRouteImport.update({
   path: '/atividades',
   getParentRoute: () => SellerRoute,
 } as any)
+const SellerAgendaRoute = SellerAgendaRouteImport.update({
+  id: '/agenda',
+  path: '/agenda',
+  getParentRoute: () => SellerRoute,
+} as any)
 const AdminVendedoresRoute = AdminVendedoresRouteImport.update({
   id: '/vendedores',
   path: '/vendedores',
@@ -93,6 +99,7 @@ export interface FileRoutesByFullPath {
   '/admin/cidades': typeof AdminCidadesRoute
   '/admin/dashboard': typeof AdminDashboardRoute
   '/admin/vendedores': typeof AdminVendedoresRoute
+  '/seller/agenda': typeof SellerAgendaRoute
   '/seller/atividades': typeof SellerAtividadesRoute
   '/seller/dashboard': typeof SellerDashboardRoute
   '/seller/empresas': typeof SellerEmpresasRoute
@@ -107,6 +114,7 @@ export interface FileRoutesByTo {
   '/admin/cidades': typeof AdminCidadesRoute
   '/admin/dashboard': typeof AdminDashboardRoute
   '/admin/vendedores': typeof AdminVendedoresRoute
+  '/seller/agenda': typeof SellerAgendaRoute
   '/seller/atividades': typeof SellerAtividadesRoute
   '/seller/dashboard': typeof SellerDashboardRoute
   '/seller/empresas': typeof SellerEmpresasRoute
@@ -122,6 +130,7 @@ export interface FileRoutesById {
   '/admin/cidades': typeof AdminCidadesRoute
   '/admin/dashboard': typeof AdminDashboardRoute
   '/admin/vendedores': typeof AdminVendedoresRoute
+  '/seller/agenda': typeof SellerAgendaRoute
   '/seller/atividades': typeof SellerAtividadesRoute
   '/seller/dashboard': typeof SellerDashboardRoute
   '/seller/empresas': typeof SellerEmpresasRoute
@@ -138,6 +147,7 @@ export interface FileRouteTypes {
     | '/admin/cidades'
     | '/admin/dashboard'
     | '/admin/vendedores'
+    | '/seller/agenda'
     | '/seller/atividades'
     | '/seller/dashboard'
     | '/seller/empresas'
@@ -152,6 +162,7 @@ export interface FileRouteTypes {
     | '/admin/cidades'
     | '/admin/dashboard'
     | '/admin/vendedores'
+    | '/seller/agenda'
     | '/seller/atividades'
     | '/seller/dashboard'
     | '/seller/empresas'
@@ -166,6 +177,7 @@ export interface FileRouteTypes {
     | '/admin/cidades'
     | '/admin/dashboard'
     | '/admin/vendedores'
+    | '/seller/agenda'
     | '/seller/atividades'
     | '/seller/dashboard'
     | '/seller/empresas'
@@ -229,6 +241,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SellerAtividadesRouteImport
       parentRoute: typeof SellerRoute
     }
+    '/seller/agenda': {
+      id: '/seller/agenda'
+      path: '/agenda'
+      fullPath: '/seller/agenda'
+      preLoaderRoute: typeof SellerAgendaRouteImport
+      parentRoute: typeof SellerRoute
+    }
     '/admin/vendedores': {
       id: '/admin/vendedores'
       path: '/vendedores'
@@ -286,12 +305,14 @@ const AdminRouteChildren: AdminRouteChildren = {
 const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
 
 interface SellerRouteChildren {
+  SellerAgendaRoute: typeof SellerAgendaRoute
   SellerAtividadesRoute: typeof SellerAtividadesRoute
   SellerDashboardRoute: typeof SellerDashboardRoute
   SellerEmpresasRoute: typeof SellerEmpresasRoute
 }
 
 const SellerRouteChildren: SellerRouteChildren = {
+  SellerAgendaRoute: SellerAgendaRoute,
   SellerAtividadesRoute: SellerAtividadesRoute,
   SellerDashboardRoute: SellerDashboardRoute,
   SellerEmpresasRoute: SellerEmpresasRoute,
